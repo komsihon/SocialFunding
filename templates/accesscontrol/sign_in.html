@@ -1,0 +1,134 @@
+{% extends "core/base_bs.html" %}
+{% load i18n static auth_tokens %}
+{% block meta %}
+    {{ block.super }}
+    <meta name="theme-color" content="#0f0823">
+    <meta name="msapplication-navbutton-color" content="#0f0823">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#0f0823">
+{% endblock %}
+
+{% block page_title %}<title>{{ service.project_name }} - {% trans "Sign in" %} </title>{% endblock %}
+{% block head_style %}
+    {{ block.super }}
+    <link href="{% static 'zovizo/css/zovizo.css' %}" media="screen" rel="stylesheet" type="text/css" />
+    <style  type="text/css">
+        body {background: #eef6ff url({% static 'zovizo/img/zovizo-home-bg.png' %}); height: 100vh}
+        .home-catchy {color: #fff; font: 27px "PT Sans", sans-serif}
+        .home-catchy h1 {font: bold 50px "PT Sans", sans-serif; letter-spacing: 2px; margin-top: -45px}
+        #content.form form {background: #fff; border: none; padding: 50px 30px 50px}
+        footer {bottom: 20px; color: #fff; position: fixed}
+        footer .company-name {color: #fff}
+        #login {float: right; margin: 0}
+        #login form {padding: 15px 0 20px}
+        .home-catchy {float: left}
+        #navbar {display: none;}
+        label span {font-weight: normal}
+        #lg-username {text-transform: lowercase}
+        #terms-warning {color: #999; font-size: 11px}
+        .login-with-ikwen {background-color: #0f0823; border-color: #0f0823;
+            font-size: 1em; letter-spacing: .5px; padding: 9px 9px 11px}
+        .login-with-ikwen strong {color: #b894ce}
+        .forgotten-password {float: left; margin-top: 7px}
+        @media (orientation: portrait) {
+            body {background: #eef6ff url({% static 'zovizo/img/zovizo-home-bg-portrait.png' %}); background-size: cover}
+        }
+        @media (max-width: 767px) {
+            #navbar {display: none;}
+            .home-catchy {float: none; font-size: 18px; font-weight: 600; text-align: center; width: 90vw}
+            .home-catchy h1 {font-size: 30px; text-align: center}
+            #login {float: none; margin: 40px auto 0; width: 90vw}
+            .login-with-ikwen {margin-top: 25px}
+            footer {bottom: -10px; text-align: center; width: 84vw}
+            .forgotten-password {color: #fff; text-align: center; width: 100%}
+        }
+        @media (max-width: 991px) {
+            body {background: #eef6ff url({% static 'zovizo/img/zovizo-home-bg-portrait.png' %}); background-size: cover}
+            #content.form form {background: rgba(255, 255, 255, 0.6); padding: 30px}
+            #content.form label {color: #331d4b}
+            #content.form input {background: none; border: none; border-bottom: 1px solid #331d4b; border-radius: 0;
+            margin-top: -3px; height: 30px; padding: 0 15px}
+        }
+        @media (max-width: 1199px) {
+            #login {color: #fff}
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div id="content" class="form container">
+        {% if login_form.errors %}
+            <p class="failure" style="font-size: 1em; padding: 9px">{{ error_message }}</p>
+        {% elif request.GET.msg %}
+            <p class="failure" style="font-size: 1em; padding: 9px">{{ request.GET.msg }}</p>
+        {% elif request.GET.successfulPasswordReset %}
+            <p class="success" style="font-size: 1em; padding: 9px">{% trans "Your password was successfully reset, login now." %}</p>
+        {% endif %}
+        {% if messages %}
+            {% for msg in messages %}<p class="msg-tag {{ msg.tags }}" style="font-size: 1em; padding: 9px">{{ msg }}</p>{% endfor %}
+        {% endif %}
+        <div class="home-catchy text-has-shade">
+            <h1>Zovizo</h1>
+            <p>{% trans "Give a chance to your projects" %}</p>
+            <p>{% trans "Give a chance to other people's projects" %}</p>
+        </div>
+        <div id="login" class="form-wrapper">
+{#            <h3 style="text-align: center">#}
+{#                <div style="margin-bottom: .3em; text-align: center">#}
+{#                    {% if config.logo.name %}#}
+{#                        <img src="{{ settings.IKWEN_MEDIA_URL }}{{ config.logo.name }}" alt="Logo {{ service.project_name }}"#}
+{#                             style="max-height: 80px"/>#}
+{#                    {% endif %}#}
+{#                </div>#}
+{#                {% trans "Login" %}#}
+{#            </h3>#}
+            <form action="{% url 'ikwen:sign_in' %}?{{ request.META.QUERY_STRING }}" method="post" class="has-shade">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="lg-username">{% trans "Username or email" %}</label>
+                    <input id="lg-username" class="form-control username" type="text" name="username" autofocus
+                           value="{{ request.GET.username }}{{ request.GET.phone }}" /> {#Only username or phone will be output depending on what is available#}
+                </div>
+                <div class="form-group">
+                    <label for="lg-password">{% trans "Password" %}</label>
+                    <input id="lg-password" class="form-control password" type="password" name="password" />
+                </div>
+                <div class="form-group">
+                    {% if settings.IS_UMBRELLA %}
+                        <button class="btn btn-primary btn-block"> {% trans "Submit" %} </button>
+                    {% else %}
+                        <button class="btn btn-primary btn-block login-with-ikwen">
+                            <img height="26" src="{% static 'ikwen/img/logo_ikwen_symbol_30x30.png' %}" />
+                            {% blocktrans %}Login with <strong>ikwen</strong>{% endblocktrans %}
+                        </button>
+                    {% endif %}
+                    {% url 'ikwen:forgotten_password' as forgotten_password_url %}
+                    <a class="forgotten-password" href="{{ forgotten_password_url|ikwenize }}">{% trans "Forgotten password ?" %}</a>
+                </div>
+            </form>
+            <div style="clear: both; padding-top: 15px; text-align: center">
+                {% trans "No account yet ?" %}
+                <a id="show-register"
+                   href="{% url 'ikwen:sign_in' %}?{{ request.META.QUERY_STRING }}">{% trans "Register" %}</a>
+            </div>
+        </div>
+        <div class="clear"></div>
+    </div>
+{% endblock %}
+{% block js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        {% get_current_language as LANGUAGE_CODE %}
+        (function() {
+            $('#lg-username').keyup(function(e) {
+                if (e.key === ' ') {
+                    var username = $(this).val().trim().toLowerCase();
+                    $(this).val(username);
+                }
+            }).blur(function() {
+                var username = $(this).val().replace(/ /g, '').toLowerCase();
+                $(this).val(username);
+            });
+        })()
+    </script>
+    {{ config.scripts|safe }}
+{% endblock %}

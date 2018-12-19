@@ -1,0 +1,21 @@
+{% extends "core/base_admin.html" %}
+{% load i18n humanize static auth_tokens admin_list %}
+
+{% block page_title %}
+<title> Zovizo - {% trans "Profile" %} </title>
+{% endblock %}
+
+{% block head_style %}
+    {{ block.super }}
+    <style>
+        body {background: #000 url({% static 'zovizo/img/Abstract--background-cube.png' %}) center; background-size: cover}
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div id="container" class="admin edge-panel-left-container">
+    </div>
+{% endblock %}
+
+{% block js %}
+{% endblock %}

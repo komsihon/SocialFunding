@@ -1,0 +1,139 @@
+{% extends "core/base_bs.html" %}
+{% load i18n humanize static auth_tokens admin_list %}
+
+{% block page_title %}
+<title> {% trans "Profile" %} - Zovizo </title>
+{% endblock %}
+
+{% block head_style %}
+    {{ block.super }}
+    <link href="{% static 'zovizo/css/zovizo.css' %}" media="screen" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+    <div id="content">
+        <div class="section cash">
+            <div class="container stage">
+                <h2 class="section-title">{% trans "Cash" %}</h2>
+                <div class="row">
+                    <div class="subscription-fees col-sm-6">
+                        <div class="subtle-shade d-box">
+                            <h3 class="d-box-title">
+                                <i class="fas fa-money-check"></i>
+                                {% trans "Subscription fees" %}
+                            </h3>
+                            <div>
+                                <div class="balance">800</div>
+                                <div class="until">
+                                    <span>{% trans "Exp." %}</span>
+                                    <span class="text-muted">16 Sept. 2018</span>
+                                </div>
+                                <a href="#" class="text-right">{% trans "Renew" %}</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="jackpot col-sm-6">
+                        <div class="subtle-shade d-box">
+                            <h3 class="d-box-title">
+                                <i class="fas fa-coins"></i>
+                                {% trans "Jackpot" %}
+                            </h3>
+                            <div>
+                                <div class="balance">546.300</div>
+                                <div class="until">
+                                    <span>{% trans "Next draw" %}</span>
+                                    <span class="text-muted">16 Sept. 2018 - 19:00 UTC</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="section project">
+            <div class="container stage">
+                <h2 class="section-title">{% trans "Your project" %}</h2>
+                <div>
+                    <form class="edit {% if not project %}tpl{% endif %}" action="?action=save_project">{% csrf_token %}
+                        <div class="form-group">
+                            <label for="project-title">{% trans "Project title" %}</label>
+                            <p class="view">{{ project.title }}</p>
+                            <input class="form-control input-sm edit" id="project-title"
+                                   name="project_title" type="text" value="{{ project.title }}" style="clear: both" />
+                        </div>
+                        <div class="form-group">
+                            <label for="project-summary">{% trans "Summary" %}</label>
+                            <p class="view">{{ project.summary }}</p>
+                            <textarea class="form-control edit" id="project-summary" name="project_summary">{{ project.summary }}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="project-description">{% trans "Description" %}</label>
+                            <p class="view">{{ project.description|safe }}</p>
+                            <textarea class="form-control edit" id="project-description" name="project_description">{{ project.description }}</textarea>
+                        </div>
+                        <a class="view edit-project" href="javascript:;">{% trans "Edit" %}</a>
+                        <button class="btn btn-success edit" style="width: 240px">{% trans "Save" %}</button>
+                    </form>
+                    {% if not project %}
+                    <div class="text-center view">
+                        <p>
+                            <i class="fas fa-puzzle-piece edit-project" style="color: #607386; font-size: 145px; cursor: pointer"></i>
+                        </p>
+                        <p class="text-muted">{% trans "Tell other members about what you plan to do if you win the jackpot" %}</p>
+                        <a href="javascript:;" class="edit-project">{% trans "Add" %}</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="section">
+            <div class="container stage">
+                <h2 class="section-title">{% trans "Bundles" %}</h2>
+                <div class="bundle-list row">
+                    {% for bundle in bundle_list %}
+                    <div class="col-sm-4">
+                        <div class="bundle subtle-shade d-box text-center">
+                            <h3 class="d-box-title">{{ bundle.duration }} {% trans "Days" %}</h3>
+                            <div class="cost text-muted">
+                                {% blocktrans with amount=bundle.amount|intcomma %}XAF {{ amount }}{% endblocktrans %}
+                            </div>
+                            <button class="btn btn-success btn-block payment-start"
+                                    data-product-id="{{ bundle.id }}">{% trans "Subscribe Now" %}</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+{#                    <div class="col-sm-4">#}
+{#                        <div class="bundle subtle-shade d-box text-center">#}
+{#                            <h3 class="d-box-title">15 {% trans "Days" %}</h3>#}
+{#                            <div class="cost text-muted">XAF 1.500</div>#}
+{#                            <button class="btn btn-warning btn-sm btn-block payment-start">{% trans "Subscribe Now" %}</button>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="col-sm-4">#}
+{#                        <div class="bundle subtle-shade d-box text-center">#}
+{#                            <h3 class="d-box-title">30 {% trans "Days" %}</h3>#}
+{#                            <div class="cost text-muted">XAF 3.000</div>#}
+{#                            <button class="btn btn-warning btn-sm btn-block" data-product-id="{{ bundle.id }}">{% trans "Subscribe Now" %}</button>#}
+{#                        </div>#}
+{#                    </div>#}
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+    </div>
+    {% include 'billing/snippets/modal_payment_options.html' %}
+{% endblock %}
+
+{% block js %}
+    {{ block.super }}
+    <script>
+        (function() {
+            $('.edit-project').click(function() {
+                $('.section.project .view').hide();
+                $('.section.project .edit').show()
+            })
+        })()
+    </script>
+{% endblock %}
