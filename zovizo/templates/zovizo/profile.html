@@ -20,15 +20,15 @@
                         <div class="subtle-shade d-box">
                             <h3 class="d-box-title">
                                 <i class="fas fa-money-check"></i>
-                                {% trans "Subscription fees" %}
+                                {% trans "Balance" %}
                             </h3>
                             <div>
-                                <div class="balance">800</div>
+                                <div class="balance">{{ wallet.balance|intcomma }}</div>
                                 <div class="until">
                                     <span>{% trans "Exp." %}</span>
                                     <span class="text-muted">16 Sept. 2018</span>
                                 </div>
-                                <a href="#" class="text-right">{% trans "Renew" %}</a>
+                                <a href="#bundles" class="text-right">{% trans "Renew" %}</a>
                             </div>
                         </div>
                     </div>
@@ -39,10 +39,10 @@
                                 {% trans "Jackpot" %}
                             </h3>
                             <div>
-                                <div class="balance">546.300</div>
+                                <div class="balance">{{ draw.winner_jackpot|intcomma }}</div>
                                 <div class="until">
                                     <span>{% trans "Next draw" %}</span>
-                                    <span class="text-muted">16 Sept. 2018 - 19:00 UTC</span>
+                                    <span class="text-muted">{{ draw.run_on|date }} - 19:00 UTC</span>
                                 </div>
                             </div>
                         </div>
@@ -57,10 +57,12 @@
                 <div>
                     <form class="edit {% if not project %}tpl{% endif %}" action="?action=save_project">{% csrf_token %}
                         <div class="form-group">
-                            <label for="project-title">{% trans "Project title" %}</label>
+                            <label for="project-title" style="clear: both">{% trans "Project title" %}</label>
                             <p class="view">{{ project.title }}</p>
-                            <input class="form-control input-sm edit" id="project-title"
-                                   name="project_title" type="text" value="{{ project.title }}" style="clear: both" />
+                            <div>
+                            <input class="form-control edit" id="project-title"
+                                   name="project_title" type="text" value="{{ project.title }}" />
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="project-summary">{% trans "Summary" %}</label>
@@ -88,7 +90,7 @@
             </div>
             <div class="clearfix"></div>
         </div>
-        <div class="section">
+        <div class="section bundles" id="bundles">
             <div class="container stage">
                 <h2 class="section-title">{% trans "Bundles" %}</h2>
                 <div class="bundle-list row">
@@ -104,20 +106,6 @@
                         </div>
                     </div>
                     {% endfor %}
-{#                    <div class="col-sm-4">#}
-{#                        <div class="bundle subtle-shade d-box text-center">#}
-{#                            <h3 class="d-box-title">15 {% trans "Days" %}</h3>#}
-{#                            <div class="cost text-muted">XAF 1.500</div>#}
-{#                            <button class="btn btn-warning btn-sm btn-block payment-start">{% trans "Subscribe Now" %}</button>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                    <div class="col-sm-4">#}
-{#                        <div class="bundle subtle-shade d-box text-center">#}
-{#                            <h3 class="d-box-title">30 {% trans "Days" %}</h3>#}
-{#                            <div class="cost text-muted">XAF 3.000</div>#}
-{#                            <button class="btn btn-warning btn-sm btn-block" data-product-id="{{ bundle.id }}">{% trans "Subscribe Now" %}</button>#}
-{#                        </div>#}
-{#                    </div>#}
                 </div>
             </div>
             <div class="clearfix"></div>

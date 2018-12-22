@@ -1,3 +1,6 @@
+from datetime import datetime
+from random import random
+
 from django.db import models
 from djangotoolbox.fields import EmbeddedModelField
 
@@ -17,8 +20,13 @@ class Project(Model):
 
 
 class Wallet(Model):
-    member_id = models.CharField(max_length=24)
-    balance = models.IntegerField(default=0)
+    member_id = models.CharField(max_length=24, db_index=True)
+    balance = models.IntegerField(default=0, db_index=True)
+
+
+class EarningsWallet(Model):
+    member_id = models.CharField(max_length=24, db_index=True)
+    balance = models.IntegerField(default=0, db_index=True)
 
 
 class Bundle(Model):
@@ -35,10 +43,21 @@ class Subscription(Model):
 
 
 class Draw(Model):
-    winner = models.ForeignKey(Member)
+    winner = models.ForeignKey(Member, blank=True, null=True)
     participant_count = models.IntegerField(default=0)
+    jackpot = models.IntegerField(default=0)
+    run_on = models.DateField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    @staticmethod
+    def get_current():
+        today = datetime.now().date()
+        draw, update = Draw.objects.get_or_create(run_on=today)
+        return draw
 
 
 class DrawSubscription(Model):
+    draw = models.ForeignKey(Draw)
     member = models.ForeignKey(Member)
     amount = models.IntegerField()
+    rand = models.FloatField(default=random)

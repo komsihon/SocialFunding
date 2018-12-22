@@ -1,6 +1,8 @@
 import json
+from datetime import datetime
 from threading import Thread
 
+from django.conf import settings
 from django.contrib import messages
 from django.core.mail import EmailMessage
 from django.core.urlresolvers import reverse
@@ -8,13 +10,16 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import TemplateView
 from django.utils.translation import gettext as _
 
-from ikwen.core.constants import CONFIRMED
+from ikwen.core.constants import CONFIRMED, PENDING
+from ikwen.accesscontrol.models import Member
 from ikwen.core.utils import get_mail_content, get_service_instance, set_counters, increment_history_field
 from ikwen.revival.models import MemberProfile
 from ikwen.billing.mtnmomo.views import MTN_MOMO
 
-from zovizo.models import MEMBERSHIP, Project, Bundle, Subscription
+from zovizo.models import MEMBERSHIP, Project, Bundle, Subscription, Wallet, Draw, DrawSubscription
 
+SUBSCRIPTION_FEES = getattr(settings, 'SUBSCRIPTION_FEES', 100)
+COMPANY_SHARE = getattr(settings, 'SUBSCRIPTION_FEES', 15)
 
 class Home(TemplateView):
     template_name = 'zovizo/home.html'
@@ -25,7 +30,17 @@ class Profile(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(Profile, self).get_context_data(**kwargs)
+
+        draw = Draw.get_current()
+        if datetime.now().hour < getattr(settings, 'DRAW_HOUR', 19):
+            draw.participant_count = Wallet.objects.using('zovizo_wallets').filter(balance__gt=0).count()
+            draw.jackpot = draw.participant_count * SUBSCRIPTION_FEES
+            draw.save()
+        draw.winner_jackpot = draw.jackpot * (1 - COMPANY_SHARE/100)
         context['bundle_list'] = Bundle.objects.filter(is_active=True)
+        wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=self.request.user.id)
+        context['wallet'] = wallet
+        context['draw'] = draw
         return context
 
     def get(self, request, *args, **kwargs):
@@ -96,10 +111,11 @@ def confirm_bundle_payment(request, *args, **kwargs):
     This function has no URL associated with it.
     It serves as ikwen setting "MOMO_AFTER_CHECKOUT"
     """
-    service = get_service_instance()
-    config = service.config
+    member = request.user
+    service = get_service_instance(check_cache=False)
+    service.raise_balance(request.session['amount'], provider=request.session['mean'])
     object_id = request.session['object_id']
-    obj = Subscription.objects.get(pk=object_id)
+    obj = Subscription.objects.get(pk=object_id, status=PENDING)
     obj.status = CONFIRMED
     obj.save()
     set_counters(service)
@@ -107,6 +123,16 @@ def confirm_bundle_payment(request, *args, **kwargs):
     increment_history_field(service, 'earnings_history', obj.amount)
     increment_history_field(service, 'transaction_earnings_history', obj.amount)
     increment_history_field(service, 'transaction_count_history')
+    wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=member.id)
+    wallet.balance += obj.amount
+    wallet.save()
+    now = datetime.now()
+    draw = Draw.get_current()
+    if now.hour < getattr(settings, 'DRAW_HOUR', 19):
+        if wallet.balance == obj.amount:  # Means Member is refilling a previously empty balance
+            draw.participant_count += 1
+            draw.jackpot = draw.participant_count * SUBSCRIPTION_FEES
+            draw.save()
     # member = request.user
     # add_event(service, PAYMENT_CONFIRMATION, member=member, object_id=object_id)
     # partner = s.retailer
@@ -129,3 +155,4 @@ def confirm_bundle_payment(request, *args, **kwargs):
     notice = _("Your subscription was successful.")
     messages.success(request, notice)
     return HttpResponseRedirect(request.session['return_url'])
+
