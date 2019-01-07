@@ -2,10 +2,10 @@ from datetime import datetime
 from random import random
 
 from django.db import models
-from djangotoolbox.fields import EmbeddedModelField
+from djangotoolbox.fields import EmbeddedModelField, ListField
 
 from ikwen.core.constants import PENDING
-from ikwen.core.models import Model
+from ikwen.core.models import Model, AbstractWatchModel
 from ikwen.accesscontrol.models import Member
 
 
@@ -61,3 +61,19 @@ class DrawSubscription(Model):
     member = models.ForeignKey(Member)
     amount = models.IntegerField()
     rand = models.FloatField(default=random)
+
+
+class Subscriber(AbstractWatchModel):
+    """
+    Profile information for a Subscriber on the website
+    """
+    member = models.OneToOneField(Member)
+    last_payment_on = models.DateTimeField(blank=True, null=True, db_index=True)
+
+    subscriptions_count_history = ListField()
+    turnover_history = ListField()
+    earnings_history = ListField()
+
+    total_subscriptions_count = models.IntegerField(default=0)
+    total_turnover = models.IntegerField(default=0)
+    total_earnings = models.IntegerField(default=0)

@@ -1,0 +1,93 @@
+{% extends 'core/dashboard_base.html' %}
+{% load i18n humanize static auth_tokens %}
+
+{% block performances %}
+    {{ block.super }}
+    <div class="row performances" style="clear: both">
+        <div class="col-sm-6">
+            <div>
+                <header>
+                    <h5>{% trans "Top subscribers" %}</h5>
+                    <a href="javascript:;" class="show-details">{% trans "Details" %}</a>
+                    <div class="clear"></div>
+                </header>
+                <div class="th">
+                    <span style="float: left">{% trans "Customer" %}</span>
+                    <span title="Estimated earnings" style="float: right">
+                        {% trans "Earnings" %}
+                        <span class="text-muted" style="font-weight: 400">({{ CRNCY.code }})</span>
+                    </span>
+                </div>
+                <ul class="report ranking today">
+                    {% if subscribers_report.today and subscribers_report.today.0.total > 0 %}
+                        {% for subscriber in subscribers_report.today|slice:"5" %}
+                            {% if subscriber.total > 0 %}
+                                {% with member=subscriber.member %}
+                                <li>
+                                    {% url 'ikwen:profile' member.id as member_url %}
+                                    <a href="{{ member_url|ikwenize }}">{{ member.full_name }}</a>
+                                    <span>{{ subscriber.total|floatformat:CRNCY.precision|intcomma }}</span>
+                                </li>
+                                {% endwith %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <li class="empty">Not enough data</li>
+                    {% endif %}
+                </ul>
+                <ul class="report ranking yesterday tpl">
+                    {% if subscribers_report.yesterday and subscribers_report.yesterday.0.total > 0 %}
+                        {% for subscriber in subscribers_report.yesterday|slice:"5" %}
+                            {% if subscriber.total > 0 %}
+                                {% with member=subscriber.member %}
+                                <li>
+                                    {% url 'ikwen:profile' member.id as member_url %}
+                                    <a href="{{ member_url|ikwenize }}">{{ member.full_name }}</a>
+                                    <span>{{ subscriber.total|floatformat:CRNCY.precision|intcomma }}</span>
+                                </li>
+                                {% endwith %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <li class="empty">Not enough data</li>
+                    {% endif %}
+                </ul>
+                <ul class="report ranking last_week tpl">
+                    {% if subscribers_report.last_week and subscribers_report.last_week.0.total > 0 %}
+                        {% for subscriber in subscribers_report.last_week|slice:"5" %}
+                            {% if subscriber.total > 0 %}
+                                {% with member=subscriber.member %}
+                                <li>
+                                    {% url 'ikwen:profile' member.id as member_url %}
+                                    <a href="{{ member_url|ikwenize }}">{{ member.full_name }}</a>
+                                    <span>{{ subscriber.total|floatformat:CRNCY.precision|intcomma }}</span>
+                                </li>
+                                {% endwith %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <li class="empty">Not enough data</li>
+                    {% endif %}
+                </ul>
+                <ul class="report ranking last_28_days tpl">
+                    {% if subscribers_report.last_28_days and subscribers_report.last_28_days.0.total > 0 %}
+                        {% for subscriber in subscribers_report.last_28_days|slice:"5" %}
+                            {% if subscriber.total > 0 %}
+                                {% with member=subscriber.member %}
+                                <li>
+                                    {% url 'ikwen:profile' member.id as member_url %}
+                                    <a href="{{ member_url|ikwenize }}">{{ member.full_name }}</a>
+                                    <span>{{ subscriber.total|floatformat:CRNCY.precision|intcomma }}</span>
+                                </li>
+                                {% endwith %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <li class="empty">Not enough data</li>
+                    {% endif %}
+                </ul>
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

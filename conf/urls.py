@@ -5,8 +5,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 from ikwen.accesscontrol.views import SignIn
-from ikwen.core.views import DashboardBase
-from zovizo.views import Home
+from zovizo.views import Dashboard
 
 urlpatterns = patterns('',
    # Examples:
@@ -28,7 +27,7 @@ urlpatterns = patterns('',
    url(r'^cci/', include('ikwen_kakocase.cci.urls', namespace='cci')),
    url(r'^currencies/', include('currencies.urls')),
 
-   url(r'^ikwen/dashboard/$', permission_required('zovizo.ik_view_dashboard')(DashboardBase.as_view()), name='dashboard'),
+   url(r'^ikwen/dashboard/$', permission_required('zovizo.ik_view_dashboard')(Dashboard.as_view()), name='dashboard'),
    url(r'^ikwen/theming/', include('ikwen.theming.urls', namespace='theming')),
    url(r'^ikwen/cashout/', include('ikwen.cashout.urls', namespace='cashout')),
    url(r'^ikwen/', include('ikwen.core.urls', namespace='ikwen')),

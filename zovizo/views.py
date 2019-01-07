@@ -11,12 +11,13 @@ from django.views.generic import TemplateView
 from django.utils.translation import gettext as _
 
 from ikwen.core.constants import CONFIRMED, PENDING
-from ikwen.accesscontrol.models import Member
-from ikwen.core.utils import get_mail_content, get_service_instance, set_counters, increment_history_field
+from ikwen.core.views import DashboardBase
+from ikwen.core.utils import get_mail_content, get_service_instance, set_counters, increment_history_field, \
+    slice_watch_objects, rank_watch_objects
 from ikwen.revival.models import MemberProfile
 from ikwen.billing.mtnmomo.views import MTN_MOMO
 
-from zovizo.models import MEMBERSHIP, Project, Bundle, Subscription, Wallet, Draw, DrawSubscription
+from zovizo.models import MEMBERSHIP, Project, Bundle, Subscription, Wallet, Draw, DrawSubscription, Subscriber
 
 SUBSCRIPTION_FEES = getattr(settings, 'SUBSCRIPTION_FEES', 100)
 COMPANY_SHARE = getattr(settings, 'SUBSCRIPTION_FEES', 15)
@@ -133,6 +134,14 @@ def confirm_bundle_payment(request, *args, **kwargs):
             draw.participant_count += 1
             draw.jackpot = draw.participant_count * SUBSCRIPTION_FEES
             draw.save()
+
+    subscriber, update = Subscriber.objects.get_or_create(member=member)
+    set_counters(subscriber)
+    subscriber.last_payment_on = now
+    increment_history_field(subscriber, 'subscriptions_count_history')
+    increment_history_field(subscriber, 'turnover_history', obj.amount)
+    increment_history_field(subscriber, 'earnings_history', obj.amount)
+
     # member = request.user
     # add_event(service, PAYMENT_CONFIRMATION, member=member, object_id=object_id)
     # partner = s.retailer
@@ -155,4 +164,23 @@ def confirm_bundle_payment(request, *args, **kwargs):
     notice = _("Your subscription was successful.")
     messages.success(request, notice)
     return HttpResponseRedirect(request.session['return_url'])
+
+
+class Dashboard(DashboardBase):
+    template_name = 'zovizo/dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(Dashboard, self).get_context_data(**kwargs)
+        subscribers_today = slice_watch_objects(Subscriber)
+        subscribers_yesterday = slice_watch_objects(Subscriber, 1)
+        subscribers_last_week = slice_watch_objects(Subscriber, 7)
+        subscribers_last_28_days = slice_watch_objects(Subscriber, 28)
+        subscribers_report = {
+            'today': rank_watch_objects(subscribers_today, 'turnover_history'),
+            'yesterday': rank_watch_objects(subscribers_yesterday, 'turnover_history', 1),
+            'last_week': rank_watch_objects(subscribers_last_week, 'turnover_history', 7),
+            'last_28_days': rank_watch_objects(subscribers_last_28_days, 'turnover_history', 28)
+        }
+        context['subscribers_report'] = subscribers_report
+        return context
 
