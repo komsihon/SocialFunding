@@ -1,0 +1,20 @@
+{% extends "core/base_bs.html" %}
+{% load i18n humanize static auth_tokens admin_list %}
+
+{% block page_title %}
+<title> Zovizo - {% trans "Home" %} </title>
+{% endblock %}
+
+{% block head_style %}
+    {{ block.super }}
+    <link href="{% static 'zovizo/css/zovizo.css' %}" media="screen" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+    <div id="container" class="admin edge-panel-left-container">
+        <div
+    </div>
+{% endblock %}
+
+{% block js %}
+{% endblock %}

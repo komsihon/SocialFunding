@@ -10,12 +10,15 @@
 .bundle {min-height: 240px}
 .section-title {font-weight: 300;margin-bottom: 30px;text-align: center;}
 .subscription-fees {}
-.d-box {padding: 10px 25px 20px}
+.d-box {padding: 10px 25px 20px;}
 .d-box-title {font-size: 21px; font-weight: 400; font-family: "PT Sans", Lato, sans-serif}
 .d-box > div {padding-left: 30px;}
 .d-box .balance {font-size: 60px}
 .section {margin-bottom: 45px}
 .section.cash .d-box {height: 212px}
+.section.cash .d-box-title {margin-top: 10px}
+.section.cash .wallet {height: 150px;text-align: center;}
+.picto {height: 50px}
 .bundle .btn {margin-top: 60px}
 .bundle > div {padding-left: 0}
 .bundle .cost {font-size: 24px; margin-top: 30px}

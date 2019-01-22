@@ -46,7 +46,7 @@ class Draw(Model):
     winner = models.ForeignKey(Member, blank=True, null=True)
     participant_count = models.IntegerField(default=0)
     jackpot = models.IntegerField(default=0)
-    run_on = models.DateField(blank=True, null=True)
+    run_on = models.DateField(unique=True, blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
     @staticmethod
@@ -60,6 +60,8 @@ class DrawSubscription(Model):
     draw = models.ForeignKey(Draw)
     member = models.ForeignKey(Member)
     amount = models.IntegerField()
+    number = models.IntegerField()
+    is_winner = models.BooleanField(default=False, db_index=True)
     rand = models.FloatField(default=random)
 
 

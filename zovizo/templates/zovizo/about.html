@@ -1,0 +1,87 @@
+{% extends 'zovizo/base.html' %}
+{% load i18n static user_agents humanize auth_tokens %}
+
+{% block meta %}
+    {{ block.super }}
+    {% include 'webnode/snippets/home_seo.html' %}
+{% endblock %}
+{% block page_title %}<title>{{ service.project_name }} - {% trans "Home" %}</title>{% endblock %}
+
+{% block head_style %}
+    {{ block.super }}
+    <style>
+        .main-banner {min-height: 180px}
+        .main-banner > div {background: rgba(0, 0, 0, .6); height: 180px; width: 100%}
+        .main-banner .container {padding-top: 65px}
+        section p {line-height: 27px}
+        @media (max-width: 767px) {
+            body > section {padding-top: 10px}
+            section h2 {font-size: 24px; text-align: center}
+        }
+        @media (min-width: 768px) {
+            section h2 {font-size: 33px; text-align: center; margin-bottom: 50px}
+            .main-banner {min-height: 240px}
+            .main-banner > div {height: 240px}
+            .main-banner .container {padding-top: 100px}
+        }
+        @media (min-width: 992px) {
+            .main-banner {min-height: 360px}
+            .main-banner > div {height: 360px}
+            .main-banner .container {padding-top: 160px}
+        }
+    </style>
+{% endblock %}
+{% block seo %}
+    <div class="hidden seo">
+        <h1>{{ config.slogan}}</h1>
+        <p>{{ config.description }}</p>
+    </div>
+{% endblock %}
+{% block banner %}
+    <section class="fw-section banner main-banner">
+        <div>
+            <div class="container">
+                <h1>À propos</h1>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+{% block content %}
+    <section class="feature h-section">
+        <div class="container">
+            <div>
+                <h2>Qu'est-ce que Zovizo ?</h2>
+                <div class="row">
+                    <div class="col-sm-5" style="margin: 30px 0">
+                        <img alt="" src="{% static 'zovizo/img/Zovizo-[about-us-illustration].png' %}" class="img-responsive">
+                    </div>
+                    <div class="col-sm-6">
+                        <p>
+                            <a href="http://www.zovizo.com">Zovizo.com</a> est une plate forme de financement participatif pensée
+                            pour mettre un accent sur les solidarités Africaines, nous réinventons le crowdfunding a notre sauce,
+                            nous faisons tous de nos contributeurs de vrais acteurs et non des spectateurs d’un monde qui bouge à
+                            une vitesse supersonique …<br>
+                            hey oui pendant que nous marquons un pas , il y en qui marquent cent.
+                            Avec <a href="http://www.zovizo.com">zovizo.com</a> nous voulons donner vie a une nouvelle génération
+                            de leaders Africains qui prend en main sa destinée, qui transforme son mindset et pensent plus collectif
+                            qu’individuel, afin que tous ensemble nous puissions construire ce pont sur les générations.
+                            <br>
+                            Ne tarde plus joint toi as nous, invites tes amis a le faire et tirons la mère Afrique vers le haut du pavé.
+                            L’Afrique notre village et notre pays, notre quartier….
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </section>
+{% endblock %}
+
+{% block js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function() {
+        })()
+    </script>
+{% endblock %}

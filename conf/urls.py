@@ -4,22 +4,26 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib import admin
 admin.autodiscover()
 
-from ikwen.accesscontrol.views import SignIn
-from zovizo.views import Dashboard
+from ikwen.flatpages.views import FlatPageView
+from zovizo.views import Dashboard, Home, About, DrawView
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+   '',
    # Examples:
    # url(r'^$', 'conf.views.home', name='home'),
    # url(r'^blog/', include('blog.urls')),
 
    url(r'^laakam/', include(admin.site.urls)),
 
-   url(r'^$', SignIn.as_view(), name='home'),
+   url(r'^$', Home.as_view(), name='home'),
+   url(r'^about/$', About.as_view(), name='about'),
+   url(r'^draw/$', DrawView.as_view(), name='draw'),
    url(r'^', include('zovizo.urls', namespace='zovizo')),
 
    url(r'^billing/', include('ikwen.billing.urls', namespace='billing')),
    url(r'^rewarding/', include('ikwen.rewarding.urls', namespace='rewarding')),
    url(r'^revival/', include('ikwen.revival.urls', namespace='revival')),
+    url(r'^page/(?P<url>[-\w]+)/$', FlatPageView.as_view(), name='flatpage'),
 
    url(r'^echo/', include('echo.urls', namespace='echo')),
 

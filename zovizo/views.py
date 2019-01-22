@@ -18,12 +18,42 @@ from ikwen.revival.models import MemberProfile
 from ikwen.billing.mtnmomo.views import MTN_MOMO
 
 from zovizo.models import MEMBERSHIP, Project, Bundle, Subscription, Wallet, Draw, DrawSubscription, Subscriber
+from zovizo.utils import pick_up_winner, register_members_for_next_draw
 
 SUBSCRIPTION_FEES = getattr(settings, 'SUBSCRIPTION_FEES', 100)
 COMPANY_SHARE = getattr(settings, 'SUBSCRIPTION_FEES', 15)
 
+
 class Home(TemplateView):
     template_name = 'zovizo/home.html'
+
+
+class About(TemplateView):
+    template_name = 'zovizo/about.html'
+
+
+def start_draw():
+    register_members_for_next_draw(debug=True)
+    pick_up_winner(debug=True)
+
+
+class DrawView(TemplateView):
+    template_name = 'zovizo/draw.html'
+
+    def get(self, request, *args, **kwargs):
+        action = request.GET.get('action')
+        if action == 'start_draw':
+            Thread(target=start_draw).start()
+            response = {'success': True}
+            return HttpResponse(json.dumps(response))
+        if action == 'get_winning_number':
+            draw = Draw.get_current()
+            if draw.winner:
+                response = {'winner': draw.winner}
+            else:
+                response = {'winner': None}
+            return HttpResponse(json.dumps(response))
+        return super(DrawView, self).get(request, *args, **kwargs)
 
 
 class Profile(TemplateView):
