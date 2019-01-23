@@ -60,9 +60,12 @@ class DrawSubscription(Model):
     draw = models.ForeignKey(Draw)
     member = models.ForeignKey(Member)
     amount = models.IntegerField()
-    number = models.IntegerField()
+    number = models.IntegerField(unique=True)
     is_winner = models.BooleanField(default=False, db_index=True)
     rand = models.FloatField(default=random)
+
+    class Meta:
+        unique_together = ('draw', 'member', )
 
 
 class Subscriber(AbstractWatchModel):

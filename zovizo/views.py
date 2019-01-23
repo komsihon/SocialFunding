@@ -43,7 +43,8 @@ class DrawView(TemplateView):
     def get(self, request, *args, **kwargs):
         action = request.GET.get('action')
         if action == 'start_draw':
-            Thread(target=start_draw).start()
+            register_members_for_next_draw(debug=True)
+            pick_up_winner(debug=True)
             response = {'success': True}
             return HttpResponse(json.dumps(response))
         if action == 'get_winning_number':

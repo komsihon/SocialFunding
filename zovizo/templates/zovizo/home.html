@@ -25,6 +25,7 @@
         .parallax {min-height: 450px; }
         .parallax > div {background: rgba(0,0,0,.7); float: left; height: 450px; padding-top: 70px; width: 100%}
         .how-it-works {background-color: #f8f8f8}
+        .how-it-works h3 {color: #545454; font-size: 21px; font-weight: 700}
         .picto-features {height: 50px}
         .call-to-action {background: url({% static 'zovizo/img/ZOviZO-[baniere].png' %}) no-repeat center; background-size: cover}
         @media (max-width: 767px) {
@@ -40,6 +41,7 @@
             .call-to-action {min-height: 300px}
         }
         @media (min-width: 992px) {
+            .how-it-works .about {margin-top: 150px}
             .how-it-works .container {margin-top: 70px}
             .parallax {min-height: 400px; }
             .parallax > div {height: 400px}
@@ -71,7 +73,7 @@
     <section class="feature h-section how-it-works">
         <div class="container">
             <div class="row">
-				<div class="col-md-5">
+				<div class="col-md-5 about">
 					<h2>Comment ça marche ?</h2>
 					<p>
                         Zovizo invente le financement aléatoire à coût dérisoire.
@@ -85,7 +87,7 @@
                             <div class="col-sm-6">
                                 <img class="picto-features" alt="picto_better_customer_compréhension"
                                      src="{% static 'zovizo/img/picto-suscribe.png'  %}" />
-                                <h2 class="mobile-adjust" style="font-size: 1.5vw">{% trans "Inscrivez-vous" %}</h2>
+                                <h3>{% trans "Inscrivez-vous" %}</h3>
                                 <p class="mobile-adjust">
                                     Utilisez votre numéro de téléphone, email et nom pour vous inscrire et vous connecter sur zovizo.com
                                 </p>
@@ -93,7 +95,7 @@
                             <div class="col-sm-6">
                                 <img class="picto-features" alt="picto_better_customer_compréhension"
                                      src="{% static 'zovizo/img/picto-buy.png'  %}" />
-                                <h2 class="mobile-adjust" style="font-size: 1.5vw">{% trans "Achetez votre pack" %}</h2>
+                                <h3>{% trans "Achetez votre pack" %}</h3>
                                 <p class="mobile-adjust">
                                     Souscrivez au pack de votre choix. 700F pour 7jours, 1500F pour 15jours ou 3000F pour 30 jours.
                                     Vous achetez votre pack par MTN MoMo ou Orange Money.
@@ -104,7 +106,7 @@
                             <div class="col-sm-6">
                                 <img class="picto-features" alt="picto_better_customer_compréhension"
                                      src="{% static 'zovizo/img/picto-connected.png' %}" />
-                                <h2 class="mobile-adjust" style="font-size: 1.5vw">{% trans "Vous êtes inscrits pour le tirage" %}</h2>
+                                <h3>{% trans "Vous êtes inscrits pour le tirage" %}</h3>
                                 <p class="mobile-adjust">
                                     Chaque jour, un montant de 100FCFA sera débité de votre cotisation pour participer au tirage du jour.
                                 </p>
@@ -112,7 +114,7 @@
                             <div class="col-sm-6">
                                 <img class="picto-features" alt="picto_better_customer_compréhension"
                                      src="{% static 'zovizo/img/picto-win.png' %}" />
-                                <h2 class="mobile-adjust" style="font-size: 1.5vw">{% trans "Gagnez" %}</h2>
+                                <h3>{% trans "Gagnez" %}</h3>
                                 <p class="mobile-adjust">
                                     Un puissant algorithme ira choisir le numéro du solidario qui bénéficiera de la cagnotte du jour.
                                     Elle est l'équivalent de 85% du montant total des cotisations

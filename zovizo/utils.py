@@ -90,7 +90,7 @@ def notify_winner(winner, debug=False):
     html_content = get_mail_content(subject, template_name=template_name,
                                     extra_context={'member_name': winner.first_name})
     sender = '%s <no-reply@%s>' % (config.company_name, service.domain)
-    recipient = Member.objects.filter(is_superuser=True)[0].email if debug else winner.email
+    recipient = 'rsihon@gmail.com' if debug else winner.email
     msg = EmailMessage(subject, html_content, sender, [recipient])
     msg.bcc = [sudo.email for sudo in Member.objects.filter(is_superuser=True) if sudo.email]
     msg.content_subtype = "html"
