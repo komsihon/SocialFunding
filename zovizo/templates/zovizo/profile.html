@@ -15,20 +15,20 @@
         <div class="section cash">
             <div class="container stage">
                 <h2 class="section-title">{% blocktrans with name=user.first_name %}Welcome {{ name }}{% endblocktrans %}</h2>
-                    <div class="subscription-status">
-                        {% if not sub and wallet.balance == 0 %}
-                            <div class="text-center not-registered row">
-                                <p class="text-danger">
-                                    {% trans "Your are not registered for the next draw" %}
-                                </p>
-                                <a class="btn btn-success" href="#bundles">{% trans "Buy a bundle now" %}</a>
-                            </div>
-                        {% elif sub %}
-                            <p class="text-center" style="color: #11a539">
-                                {% trans "Your are registered for the next draw. Good luck !" %}
+                <div class="subscription-status">
+                    {% if not sub and wallet.balance == 0 %}
+                        <div class="text-center not-registered row">
+                            <p class="text-danger">
+                                {% trans "You are not registered for the next draw" %}
                             </p>
-                        {% endif %}
-                    </div>
+                            <a class="btn btn-success" href="#bundles">{% trans "Buy a bundle now" %}</a>
+                        </div>
+                    {% elif sub %}
+                        <p class="text-center" style="color: #11a539">
+                            {% trans "Your are registered for the next draw. Good luck !" %}
+                        </p>
+                    {% endif %}
+                </div>
 
                 {% if wallet.balance > 0 %}
                     <div class="wallet">

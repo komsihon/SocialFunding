@@ -25,6 +25,7 @@ def register_members_for_next_draw(debug=False):
     wallet_queryset = Wallet.objects.using('zovizo_wallets').filter(balance__gt=0)
     total = wallet_queryset.count()
     chunks = total / 500 + 1
+    draw.participant_count = 0
     for i in range(chunks):
         start = i * 500
         finish = (i + 1) * 500

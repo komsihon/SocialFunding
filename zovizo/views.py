@@ -1,10 +1,8 @@
 import json
 from datetime import datetime
-from threading import Thread
 
 from django.conf import settings
 from django.contrib import messages
-from django.core.mail import EmailMessage
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import TemplateView
@@ -40,17 +38,25 @@ def start_draw():
 class DrawView(TemplateView):
     template_name = 'zovizo/draw.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(DrawView, self).get_context_data(**kwargs)
+        draw = Draw.get_current()
+        DrawSubscription.objects.filter(draw=draw).delete()
+        register_members_for_next_draw(debug=True)
+        context['draw'] = draw
+        return context
+
     def get(self, request, *args, **kwargs):
         action = request.GET.get('action')
         if action == 'start_draw':
-            register_members_for_next_draw(debug=True)
             pick_up_winner(debug=True)
             response = {'success': True}
             return HttpResponse(json.dumps(response))
         if action == 'get_winning_number':
             draw = Draw.get_current()
             if draw.winner:
-                response = {'winner': draw.winner}
+                sub = DrawSubscription.objects.get(draw=draw, member=draw.winner)
+                response = {'winner': '%06d' % sub.number}
             else:
                 response = {'winner': None}
             return HttpResponse(json.dumps(response))
@@ -65,9 +71,9 @@ class Profile(TemplateView):
 
         draw = Draw.get_current()
         if datetime.now().hour < getattr(settings, 'DRAW_HOUR', 19):
-            draw.participant_count = Wallet.objects.using('zovizo_wallets').filter(balance__gt=0).count()
+            draw.participant_count = Wallet.objects.using('zovizo_wallets')\
+                .filter(balance__gte=SUBSCRIPTION_FEES).count()
             draw.jackpot = draw.participant_count * SUBSCRIPTION_FEES
-            draw.save()
         draw.winner_jackpot = draw.jackpot * (1 - COMPANY_SHARE/100)
         context['bundle_list'] = Bundle.objects.filter(is_active=True)
         wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=self.request.user.id)

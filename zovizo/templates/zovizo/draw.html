@@ -9,13 +9,14 @@
 
 {% block head_style %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static 'zovizo/css/zovizo_winner.css' %}">
+    <link rel="stylesheet" href="{% static 'zovizo/css/zovizo_winner.css' %}?v=19.2.3.1">
     <style>
         h2 {font-size: 2.5vw; margin-top: 0 !important}
         .main-banner {min-height: 300px}
         .main-banner > div {background: rgba(0, 0, 0, .5); height: 360px; width: 100%}
     </style>
 {% endblock %}
+
 {% block seo %}
     <div class="hidden seo">
         <h1>{{ config.slogan}}</h1>
@@ -24,122 +25,95 @@
 {% endblock %}
 
 {% block content %}
-	<section style=" background-color: #f8f8f8">
+	<section>
         <div class="text-center" style="padding: 15vh 0;">
-            <button class="btn btn-success btn-lg" onclick="generateNumber(0)">Lancer le tirage</button>
+            <button class="btn btn-success btn-lg" data-toggle="modal"
+                    data-target="#modal-draw" id="start-draw">Lancer le tirage</button>
             <div class="clearfix"></div>
         </div>
-        <div class="row" style="padding: 15vh 0;">
-            <div class="col-md-8 col-md-offset-2" style="text-align: center;">
-			<div class="output" id="output1">--</div>
-			<div class="output" id="output2">--</div>
-			<div class="output" id="output3">--</div>
-{#				<div id="world">#}
-{#				  <div id="mooseRotator">#}
-{#					<div id="mooseTranslator">#}
-{#					  <div id="mooseShadow"></div>#}
-{#					  <div id="moose">#}
-{#						<div id="mooseBody">#}
-{##}
-{#						  <div id="mooseFront">#}
-{#							<div id="mooseFront_a" class="mooseFrontItem"></div>#}
-{#							<div id="mooseFront_b" class="mooseFrontItem"></div>#}
-{#							<div id="mooseFront_c" class="mooseFrontItem"></div>#}
-{#							<div id="mooseFront_d" class="mooseFrontItem"></div>#}
-{#							<div id="mooseFront_e" class="mooseFrontItem"></div>#}
-{#							<div id="mooseFront_f" class="mooseFrontItem"></div>#}
-{#						  </div>#}
-{##}
-{#						  <div id="mooseBack">#}
-{#							<div id="mooseBack_a" class="mooseBackItem"></div>#}
-{#							<div id="mooseBack_b" class="mooseBackItem"></div>#}
-{#							<div id="mooseBack_c" class="mooseBackItem"></div>#}
-{#							<div id="mooseBack_d" class="mooseBackItem"></div>#}
-{#							<div id="mooseBack_e" class="mooseBackItem"></div>#}
-{#							<div id="mooseBack_f" class="mooseBackItem"></div>#}
-{#						  </div>#}
-{##}
-{#						  <div id="mooseLeft">#}
-{#							<div id="mooseLeft_a" class="mooseLeftItem"></div>#}
-{#							<div id="mooseLeft_b" class="mooseLeftItem"></div>#}
-{#							<div id="mooseLeft_c" class="mooseLeftItem"></div>#}
-{#							<div id="mooseLeft_d" class="mooseLeftItem"></div>#}
-{#						  </div>#}
-{##}
-{#						  <div id="mooseRight">#}
-{#							<div id="mooseRight_a" class="mooseRightItem"></div>#}
-{#							<div id="mooseRight_b" class="mooseRightItem"></div>#}
-{#							<div id="mooseRight_c" class="mooseRightItem"></div>#}
-{#							<div id="mooseRight_d" class="mooseRightItem"></div>#}
-{#						  </div>#}
-{##}
-{#						  <div id="mooseTop">#}
-{#							<div id="mooseTop_a" class="mooseTopItem"></div>#}
-{#							<div id="mooseTop_b" class="mooseTopItem"></div>#}
-{#							<div id="mooseTop_c" class="mooseTopItem"></div>#}
-{#							<div id="mooseTop_d" class="mooseTopItem"></div>#}
-{#						  </div>#}
-{##}
-{#						  <div id="mooseBottom">#}
-{#							<div id="mooseBottom_a" class="mooseBottomItem"></div>#}
-{#							<div id="mooseBottom_b" class="mooseBottomItem"></div>#}
-{#							<div id="mooseBottom_c" class="mooseBottomItem"></div>#}
-{#							<div id="mooseBottom_d" class="mooseBottomItem"></div>#}
-{#						  </div>#}
-{#						</div>#}
-{##}
-{#						<div id="mooseLegLeft">#}
-{#						  <div id="mooseLegLeft_a" class="mooseLegLeftItem mooseBottomItem"></div>#}
-{#						  <div id="mooseLegLeft_b" class="mooseLegLeftItem mooseLeftItem"></div>#}
-{#						  <div id="mooseLegLeft_c" class="mooseLegLeftItem mooseRightItem"></div>#}
-{#						  <div id="mooseLegLeft_d" class="mooseLegLeftItem mooseFrontItem"></div>#}
-{#						  <div id="mooseLegLeft_e" class="mooseLegLeftItem mooseBackItem"></div>#}
-{#						  <div id="mooseLegLeft_f" class="mooseLegLeftItem mooseTopItem"></div>#}
-{#						</div>#}
-{##}
-{#						<div id="mooseLegRight">#}
-{#						  <div id="mooseLegRight_a" class="mooseLegRightItem mooseBottomItem"></div>#}
-{#						  <div id="mooseLegRight_b" class="mooseLegRightItem mooseLeftItem"></div>#}
-{#						  <div id="mooseLegRight_c" class="mooseLegRightItem mooseRightItem"></div>#}
-{#						  <div id="mooseLegRight_d" class="mooseLegRightItem mooseFrontItem"></div>#}
-{#						  <div id="mooseLegRight_e" class="mooseLegRightItem mooseBackItem"></div>#}
-{#						  <div id="mooseLegRight_f" class="mooseLegRightItem mooseTopItem"></div>#}
-{#						</div>#}
-{#					  </div>#}
-{#					</div>#}
-{#				  </div>#}
-{#				</div>#}
-		</div>
-        </div>
-
 	</section>
+
+    <div class="modal fade" id="modal-draw" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg draw-stage" role="document">
+            <div class="modal-content modal-info">
+                <div class="modal-header text-center">
+                    <button style="color: #fff" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title text-has-shade">{% trans "Tirage en cours" %}</h4>
+                    <h2 class="jackpot text-has-shade">{{ draw.jackpot|intcomma }} FCFA</h2>
+                    <p>{% trans "À gagner" %}</p>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="row">
+                        <div class="col-md-8 col-md-offset-2 boxes text-center">
+                            <div class="row">
+                                <div class="col-xs-4">
+                                    <div class="output" id="output1">--</div>
+                                </div>
+                                <div class="col-xs-4">
+                                    <div class="output" id="output2">--</div>
+                                </div>
+                                <div class="col-xs-4">
+                                    <div class="output" id="output3">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="cta-text">{% blocktrans %}
+                        Vous avez manqué ce tirage ? Ne ratez pas le prochain.
+                    {% endblocktrans %}</p>
+                    <div class="text-center cta">
+                        <a href="{% url 'ikwen:sign_in' %}" class="btn btn-success">{% trans "Inscrivez-vous sur Zovizo" %}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
 {% endblock %}
 
 {% block js %}
     {{ block.super }}
     <script type="text/javascript">
         (function() {
-            var numbers = [52, 14, 35];
-            window.generateNumber = function(index) {
-                var desired = numbers[index];
-                var duration = 10000;
-                var output = $('#output' + index); // Start ID with letter
+            function grabWinner() {
+                $.getJSON('', {action: 'get_winning_number'}, function(data) {
+                    var winner = data.winner;
+                    if (!winner) return;
+                    $('#output1').text(winner.substr(0, 2));
+                    $('#output2').text(winner.substr(2, 2));
+                    $('#output3').text(winner.substr(4))
+                })
+            }
+            var duration = 10000;
+            generateNumber = function() {
                 var started = new Date().getTime();
-
-                animationTimer = setInterval(function() {
-                    if (output.text().trim() === desired || new Date().getTime() - started > duration) {
+                var animationTimer = setInterval(function() {
+                    if (new Date().getTime() - started > duration) {
                         clearInterval(animationTimer); // Stop the loop
-                        output.text(desired); // Print desired number in case it stopped at a different one due to duration expiration
-                        generateNumber(index + 1);
                     } else {
-                        output.text(
-                            '' +
-                            Math.floor(Math.random() * 10) +
-                            Math.floor(Math.random() * 10)
-                        );
+                        var rand1 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
+                        var rand2 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
+                        var rand3 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
+                        $('#output1').text(rand1);
+                        $('#output2').text(rand2);
+                        $('#output3').text(rand3)
                     }
                 }, 100);
-            }
+            };
+            $('#start-draw').click(function() {
+                $.getJSON('', {action: 'start_draw'}, function(data) {
+                    if (data.success) {
+                        generateNumber();
+                        setTimeout(grabWinner, duration);
+                        return
+                    }
+                    alert("Error when starting draw");
+                });
+            });
         })()
     </script>
 {% endblock %}

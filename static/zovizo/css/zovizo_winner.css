@@ -1,24 +1,27 @@
+.draw-stage {
+    background: #000 url(../img/zovizo-draw-bg2.jpg) no-repeat center;
+    background-size: cover; color: #fff
+}
+.draw-stage .modal-header {border-bottom: none}
+.draw-stage .modal-title {color: #fff;font-size: 20px;padding: 16px 0 5px;}
+.draw-stage .modal-content {background: transparent; height: 90vh}
+.draw-stage .modal-body {padding-top:  5vh}
+.draw-stage .jackpot {
+    color: #fffb00;
+    font-size: 36px;
+}
+.draw-stage .cta-text {margin-top: 10vh;}
+
 .output {
-    margin: 20px;
-    padding: 20px;
-    background: #000;
+    padding: 15px;
+    background: rgba(0,0,0,.7);
     border: 5px solid;
     border-radius: 5px;
-    font-size: 80px;
+    font-size: 2.5em;
     color: #fff;
     text-align: center;
-    display: inline;
+    line-height: 1.5em;
 }
-
-
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  transform-style: preserve-3d;
-}
-
 
 #world {
   width: 100%;
@@ -490,112 +493,6 @@
     box-shadow: 2px 2px 40px #f35, -2px -2px 40px #f35, -2px 2px 40px #f35, 2px -2px 40px #f35;
   }
 }
-/* 
-@keyframes borderColor1 {
-  0% {
-    border-color: #eb670f;
-  }
-
-  35% {
-    border-color: #f35;
-  }
-
-  70% {
-    border-color: #45a3e5;
-  }
-
-  100% {
-    border-color: #66bf39;
-  }
-}
-
-@keyframes borderColor2 {
-  0% {
-    border-color: #66bf39;
-  }
-
-  35% {
-    border-color: #eb670f;
-  }
-
-  70% {
-    border-color: #f35;
-  }
-
-  100% {
-    border-color: #45a3e5;
-  }
-}
-
-@keyframes borderColor3 {
-  0% {
-    border-color: #45a3e5;
-  }
-
-  35% {
-    border-color: #66bf39;
-  }
-
-  70% {
-    border-color: #eb670f;
-  }
-
-  100% {
-    border-color: #f35;
-  }
-} */
-/* 
-@keyframes borderColor {
-  0% {
-    border-top-color: #45a3e5;
-    border-right-color: #66bf39;
-    border-bottom-color: #eb670f;
-    border-left-color: #f35;
-  }
-
-  35% {
-    border-top-color: #f35;
-    border-right-color: #45a3e5;
-    border-bottom-color: #66bf39;
-    border-left-color: #eb670f;
-  }
-
-  70% {
-    border-top-color: #eb670f;
-    border-right-color: #f35;
-    border-bottom-color: #45a3e5;
-    border-left-color: #66bf39;
-  }
-
-  100% {
-    border-top-color: #66bf39;
-    border-right-color: #eb670f;
-    border-bottom-color: #f35;
-    border-left-color: #45a3e5;
-  }
-} */
-/* 
-@keyframes bgcolor {
-  0% {
-    background-color: #45a3e5
-  }
-
-  30% {
-    background-color: #66bf39
-  }
-
-  60% {
-    background-color: #eb670f
-  }
-
-  90% {
-    background-color: #f35
-  }
-
-  100% {
-    background-color: #864cbf
-  }
-} */
 
 #output1 {
   -webkit-animation: boxShadow1 10s infinite;
@@ -616,4 +513,22 @@
   animation: boxShadow3 5s infinite;
   -webkit-animation-direction: alternate;
   animation-direction: alternate;
+}
+
+@media (orientation: portrait) {
+    .draw-stage {height: 90vh}
+    .draw-stage .cta-text {margin-top: 13vh;}
+}
+
+@media (max-width: 767px) {
+    .boxes .col-xs-4 {padding: 0 8px}
+}
+
+@media (min-width: 600px) {
+    .output {padding: 20px;font-size: 5em;line-height: 1.2em;}
+}
+
+@media (min-width: 991px) {
+    .output {padding: 25px}
+    .draw-stage .jackpot {font-size: 60px;}
 }
