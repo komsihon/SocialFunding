@@ -57,6 +57,8 @@ class DrawView(TemplateView):
             if draw.winner:
                 sub = DrawSubscription.objects.get(draw=draw, member=draw.winner)
                 response = {'winner': '%06d' % sub.number}
+                draw.winner = None  # Cancel everything.
+                draw.save()
             else:
                 response = {'winner': None}
             return HttpResponse(json.dumps(response))
@@ -75,7 +77,7 @@ class Profile(TemplateView):
                 .filter(balance__gte=SUBSCRIPTION_FEES).count()
             draw.jackpot = draw.participant_count * SUBSCRIPTION_FEES
         draw.winner_jackpot = draw.jackpot * (1 - COMPANY_SHARE/100)
-        context['bundle_list'] = Bundle.objects.filter(is_active=True)
+        context['bundle_list'] = Bundle.objects.filter(is_active=True).order_by('amount')
         wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=self.request.user.id)
         context['wallet'] = wallet
         context['draw'] = draw

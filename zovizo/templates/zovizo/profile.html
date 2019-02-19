@@ -7,7 +7,7 @@
 
 {% block head_style %}
     {{ block.super }}
-    <link href="{% static 'zovizo/css/zovizo.css' %}?v=19.1.22" media="screen" rel="stylesheet" type="text/css" />
+    <link href="{% static 'zovizo/css/zovizo.css' %}?v=19.2.16" media="screen" rel="stylesheet" type="text/css" />
 {% endblock %}
 
 {% block content %}
@@ -123,7 +123,7 @@
                 <h2 class="section-title">{% trans "Bundles" %}</h2>
                 <div class="bundle-list row">
                     {% for bundle in bundle_list %}
-                    <div class="col-sm-4">
+                    <div class="col-sm-4{% if forloop.counter == 4 %} col-sm-offset-4{% endif %}">
                         <div class="bundle subtle-shade d-box text-center">
                             <h3 class="d-box-title">{{ bundle.duration }} {% trans "Days" %}</h3>
                             <div class="cost text-muted">

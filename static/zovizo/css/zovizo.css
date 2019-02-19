@@ -7,7 +7,7 @@
 */
 
 .stage {margin: auto}
-.bundle {min-height: 240px}
+.bundle {min-height: 240px; margin-bottom: 30px}
 .section-title {font-weight: 300;margin-bottom: 30px;text-align: center;}
 .subscription-fees {}
 .d-box {padding: 10px 25px 20px;}

@@ -1,3 +1,4 @@
+from datetime import datetime
 from random import random
 
 from django.conf import settings
@@ -50,6 +51,7 @@ def pick_up_winner(debug=False):
     The winner is a random DrawSubscription which rand field
     is the nearest to the ref random number.
     """
+    now = datetime.now()
     draw = Draw.get_current()
     if not debug:
         if draw.is_active:
@@ -68,6 +70,15 @@ def pick_up_winner(debug=False):
             sub = DrawSubscription.objects.filter(draw=draw, rand__gte=token)[0]
         except:
             sub = DrawSubscription.objects.filter(draw=draw, rand__lt=token)[0]
+
+        member = sub.member
+        try:
+            draw = Draw.objects.filter(winner=member).order_by('-id')[0]
+            diff = now - draw.created_on
+            if diff.days < 5:
+                continue
+        except IndexError:
+            pass
 
         tmp = abs(sub.rand - ref)
         if tmp < distance:
@@ -88,8 +99,9 @@ def notify_winner(winner, debug=False):
     config = service.config
     subject = _("You are the happy winner of the draw today")
     template_name = 'zovizo/mails/winner_notice.html'
+    draw = Draw.get_current()
     html_content = get_mail_content(subject, template_name=template_name,
-                                    extra_context={'member_name': winner.first_name})
+                                    extra_context={'member_name': winner.first_name, 'draw': draw})
     sender = '%s <no-reply@%s>' % (config.company_name, service.domain)
     recipient = 'rsihon@gmail.com' if debug else winner.email
     msg = EmailMessage(subject, html_content, sender, [recipient])
