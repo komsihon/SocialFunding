@@ -18,6 +18,7 @@ COMPANY_SHARE = getattr(settings, 'SUBSCRIPTION_FEES', 15)
 
 def register_members_for_next_draw(debug=False):
     draw = Draw.get_current()
+    draw.run_on = datetime.now()
     if not debug:
         if not draw.is_active:
             return
@@ -51,44 +52,31 @@ def pick_up_winner(debug=False):
     The winner is a random DrawSubscription which rand field
     is the nearest to the ref random number.
     """
-    now = datetime.now()
     draw = Draw.get_current()
     if not debug:
         if draw.is_active:
             raise ValueError("Cannot pick-up up winner on an active Draw. Call register_members_for_next_draw() first.")
         if draw.winner:
             raise ValueError("Cannot pick-up a winner more than once. A winner already exists for this draw.")
-    ref = random()
-    total = DrawSubscription.objects.filter(draw=draw).count()
-    loop_count = min(total, 1000)
-    nearest = None
-    distance = 1
 
-    for i in range(loop_count):
-        token = random()
+    while True:
+        ref = random()
+        previous_winners = [draw.winner for draw in Draw.objects.exclude(pk=draw.id).order_by('-id')[:5]]
         try:
-            sub = DrawSubscription.objects.filter(draw=draw, rand__gte=token)[0]
+            sub = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw, rand__gte=ref)[0]
+            break
         except:
-            sub = DrawSubscription.objects.filter(draw=draw, rand__lt=token)[0]
+            try:
+                sub = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw, rand__lt=ref)[0]
+                break
+            except:
+                pass
 
-        member = sub.member
-        try:
-            draw = Draw.objects.filter(winner=member).order_by('-id')[0]
-            diff = now - draw.created_on
-            if diff.days < 5:
-                continue
-        except IndexError:
-            pass
-
-        tmp = abs(sub.rand - ref)
-        if tmp < distance:
-            distance = tmp
-            nearest = sub
 
     if not debug:
         sub.is_winner = True
         sub.save()
-    draw.winner = nearest.member
+    draw.winner = sub.member
     draw.save()
     notify_winner(draw.winner, debug)
     share_jackpot(debug)

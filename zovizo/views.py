@@ -25,6 +25,31 @@ COMPANY_SHARE = getattr(settings, 'SUBSCRIPTION_FEES', 15)
 class Home(TemplateView):
     template_name = 'zovizo/home.html'
 
+    def get(self, request, *args, **kwargs):
+        action = request.GET.get('action')
+        if action == 'check_current_draw':
+            now = datetime.now()
+            draw = Draw.get_current()
+            if draw.run_on:
+                run_on = draw.run_on
+                datetime.combine(run_on, datetime.min.time())
+                diff = now - draw.run_on
+                if diff.total_seconds() >= 180:
+                    draw.is_closed = True
+            response = {'draw': draw.to_dict()}
+            return HttpResponse(json.dumps(response))
+        elif action == 'get_winning_number':
+            draw = Draw.get_current()
+            if draw.winner:
+                sub = DrawSubscription.objects.get(draw=draw, member=draw.winner)
+                response = {'winner': '%06d' % sub.number}
+                draw.winner = None  # Cancel everything.
+                draw.save()
+            else:
+                response = {'winner': None}
+            return HttpResponse(json.dumps(response))
+        return super(Home, self).get(self, request, *args, **kwargs)
+
 
 class About(TemplateView):
     template_name = 'zovizo/about.html'
@@ -49,6 +74,7 @@ class DrawView(TemplateView):
     def get(self, request, *args, **kwargs):
         action = request.GET.get('action')
         if action == 'start_draw':
+            register_members_for_next_draw(debug=True)
             pick_up_winner(debug=True)
             response = {'success': True}
             return HttpResponse(json.dumps(response))

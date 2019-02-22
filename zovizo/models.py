@@ -46,7 +46,7 @@ class Draw(Model):
     winner = models.ForeignKey(Member, blank=True, null=True)
     participant_count = models.IntegerField(default=0)
     jackpot = models.IntegerField(default=0)
-    run_on = models.DateField(unique=True, blank=True, null=True)
+    run_on = models.DateTimeField(unique=True, blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
     @staticmethod
