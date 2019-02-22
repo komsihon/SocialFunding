@@ -89,7 +89,7 @@
                 })
             }
             var duration = 10000;
-            generateNumber = function() {
+            function animateNumbers() {
                 var started = new Date().getTime();
                 var animationTimer = setInterval(function() {
                     if (new Date().getTime() - started > duration) {
@@ -104,10 +104,11 @@
                     }
                 }, 100);
             };
+
             $('#start-draw').click(function() {
                 $.getJSON('', {action: 'start_draw'}, function(data) {
                     if (data.success) {
-                        generateNumber();
+                        animateNumbers();
                         setTimeout(grabWinner, duration);
                         return
                     }

@@ -58,7 +58,7 @@
 {% block banner %}
     <section class="fw-section banner main-banner">
         <div class="col-md-6 col-md-offset-3 text-center mobile-adjust">
-          <h1>Notre premier tirage aura lieu le 15 février 2019...</h1>
+          <h1>Prochain tiragee aujourd'hui à 19h...</h1>
             <a class="btn btn-outline-secondary animated pulse mobile-adjust" href="{% url 'ikwen:do_sign_in' %}"
                style=" font-size: 20px; margin: 20px; height: 45px; min-width: 240px;">
                 Je m'inscris
@@ -178,6 +178,44 @@
             </a>
         </div>
     </section>
+
+    <div class="modal fade" id="modal-draw" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg draw-stage" role="document">
+            <div class="modal-content modal-info">
+                <div class="modal-header text-center">
+                    <button style="color: #fff" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title text-has-shade">{% trans "Tirage en cours" %}</h4>
+                    <h2 class="jackpot text-has-shade">{{ draw.jackpot|intcomma }} FCFA</h2>
+                    <p>{% trans "À gagner" %}</p>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="row">
+                        <div class="col-md-8 col-md-offset-2 boxes text-center">
+                            <div class="row">
+                                <div class="col-xs-4">
+                                    <div class="output" id="output1">--</div>
+                                </div>
+                                <div class="col-xs-4">
+                                    <div class="output" id="output2">--</div>
+                                </div>
+                                <div class="col-xs-4">
+                                    <div class="output" id="output3">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="cta-text">{% blocktrans %}
+                        Vous avez manqué ce tirage ? Ne ratez pas le prochain.
+                    {% endblocktrans %}</p>
+                    <div class="text-center cta">
+                        <a href="{% url 'ikwen:sign_in' %}" class="btn btn-success">{% trans "Inscrivez-vous sur Zovizo" %}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block js %}
@@ -200,16 +238,59 @@
                 prevEl: '.swiper-button-prev',
                 },
                 autoplay: 5000
-            })
+            });
 
             $('.swiper-container').on('mouseenter', function(e){
                 console.log('stop autoplay');
                 mySwiper.stopAutoplay();
-            })
-             $('.swiper-container').on('mouseleave', function(e){
+            }).on('mouseleave', function(e){
                 console.log('start autoplay');
                 mySwiper.startAutoplay();
-            })
+            });
+
+            function grabWinner() {
+                $.getJSON('', {action: 'get_winning_number'}, function(data) {
+                    var winner = data.winner;
+                    if (!winner) return;
+                    $('#output1').text(winner.substr(0, 2));
+                    $('#output2').text(winner.substr(2, 2));
+                    $('#output3').text(winner.substr(4))
+                })
+            }
+
+            var duration = 180000;
+            function animateNumbers() {
+                var started = new Date().getTime();
+                var animationTimer = setInterval(function() {
+                    if (new Date().getTime() - started > duration) {
+                        clearInterval(animationTimer); // Stop the loop
+                    } else {
+                        var rand1 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
+                        var rand2 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
+                        var rand3 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
+                        $('#output1').text(rand1);
+                        $('#output2').text(rand2);
+                        $('#output3').text(rand3)
+                    }
+                }, 100);
+            }
+
+            function checkCurrentDraw() {
+                var started = false;
+                var chekerTimer = setInterval(function() {
+                    if (started) {
+                        clearInterval(chekerTimer);
+                        $('#modal-draw').modal('show');
+                        animateNumbers();
+                        setTimeout(grabWinner, duration);
+                        return;
+                    }
+                    $.getJSON('', {action: 'check_current_draw'}, function(data) {
+                        if (!data.draw.is_active && !data.draw.is_closed) started = true;
+                    });
+                }, 10000)
+            }
+            checkCurrentDraw();
         })()
     </script>
 {% endblock %}
