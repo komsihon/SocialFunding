@@ -11,7 +11,7 @@ a {color: #c52d2f; -webkit-transition: color 300ms, background-color 300ms; -moz
 a:hover, a:focus {color: #d43133;}
 hr {border-top: 1px solid #e5e5e5; border-bottom: 1px solid #fff;}
 
-.main-banner {background-image: url(../img/zovizo_bg.jpg)}
+.main-banner {background-image: url(../img/zovizo_bg.jpg);}
 
 #feature .feature-wrap, #services .feature-wrap  {background-color: #FFF;}
 #feature .feature-wrap img, #services .feature-wrap img  {margin: auto; width: 100%;}

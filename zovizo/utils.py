@@ -24,7 +24,7 @@ def register_members_for_next_draw(debug=False):
             return
         draw.is_active = False
         draw.save()
-    wallet_queryset = Wallet.objects.using('zovizo_wallets').filter(balance__gt=0)
+    wallet_queryset = Wallet.objects.using('zovizo_wallets').filter(balance__gte=SUBSCRIPTION_FEES)
     total = wallet_queryset.count()
     chunks = total / 500 + 1
     draw.participant_count = 0
@@ -39,8 +39,8 @@ def register_members_for_next_draw(debug=False):
             draw.jackpot = draw.participant_count * SUBSCRIPTION_FEES
             try:
                 member = Member.objects.get(pk=wallet.member_id)
-                DrawSubscription.objects.get_or_create(draw=draw, member=member, amount=SUBSCRIPTION_FEES,
-                                                       number=draw.participant_count)
+                DrawSubscription.objects.get_or_create(draw=draw, member=member, amount=SUBSCRIPTION_FEES)
+                print("Subscription added")
             except:
                 continue
     draw.save()
@@ -59,19 +59,21 @@ def pick_up_winner(debug=False):
         if draw.winner:
             raise ValueError("Cannot pick-up a winner more than once. A winner already exists for this draw.")
 
-    while True:
-        ref = random()
-        previous_winners = [draw.winner for draw in Draw.objects.exclude(pk=draw.id).order_by('-id')[:5]]
+    previous_winners = [obj.winner for obj in Draw.objects.exclude(pk=draw.id).order_by('-id')[:5] if obj.winner]
+    count = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw).count()
+    if count == 0:
+        print("Not enough participants for the draw")
+        return
+    ref = random()
+    try:
+        sub = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw, rand__gte=ref)[0]
+        print("Found GTE")
+    except:
         try:
-            sub = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw, rand__gte=ref)[0]
-            break
+            sub = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw, rand__lt=ref)[0]
+            print("Found LT")
         except:
-            try:
-                sub = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw, rand__lt=ref)[0]
-                break
-            except:
-                pass
-
+            pass
 
     if not debug:
         sub.is_winner = True
@@ -93,7 +95,8 @@ def notify_winner(winner, debug=False):
     sender = '%s <no-reply@%s>' % (config.company_name, service.domain)
     recipient = 'rsihon@gmail.com' if debug else winner.email
     msg = EmailMessage(subject, html_content, sender, [recipient])
-    msg.bcc = [sudo.email for sudo in Member.objects.filter(is_superuser=True) if sudo.email]
+    if not debug:
+        msg.bcc = [sudo.email for sudo in Member.objects.filter(is_superuser=True) if sudo.email]
     msg.content_subtype = "html"
     msg.send()
 
@@ -105,6 +108,6 @@ def share_jackpot(debug=False):
             return
     winner_earnings = draw.jackpot * WINNER_SHARE / 100
     winner = Member.objects.filter(is_superuser=True)[0] if debug else draw.winner
-    earnings_wallet, update = EarningsWallet.objects.get_or_create(member_id=winner.id)
+    earnings_wallet, update = EarningsWallet.objects.using('zovizo_wallets').get_or_create(member_id=winner.id)
     earnings_wallet.balance += winner_earnings
     earnings_wallet.save()

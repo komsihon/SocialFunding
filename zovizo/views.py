@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages
@@ -15,7 +15,8 @@ from ikwen.core.utils import get_mail_content, get_service_instance, set_counter
 from ikwen.revival.models import MemberProfile
 from ikwen.billing.mtnmomo.views import MTN_MOMO
 
-from zovizo.models import MEMBERSHIP, Project, Bundle, Subscription, Wallet, Draw, DrawSubscription, Subscriber
+from zovizo.models import MEMBERSHIP, Project, Bundle, Subscription, Wallet, Draw, DrawSubscription, Subscriber, \
+    EarningsWallet
 from zovizo.utils import pick_up_winner, register_members_for_next_draw
 
 SUBSCRIPTION_FEES = getattr(settings, 'SUBSCRIPTION_FEES', 100)
@@ -25,6 +26,24 @@ COMPANY_SHARE = getattr(settings, 'SUBSCRIPTION_FEES', 15)
 class Home(TemplateView):
     template_name = 'zovizo/home.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(Home, self).get_context_data(**kwargs)
+        now = datetime.now()
+        hour = getattr(settings, 'DRAW_HOUR', 19)
+        if now.hour >= hour:
+            next_draw = datetime(now.year, now.month, now.day, hour) + timedelta(hours=24)
+        else:
+            next_draw = datetime(now.year, now.month, now.day, hour)
+
+        diff = next_draw - now
+        remaining_time = int(diff.total_seconds())
+        context['remaining_time'] = remaining_time
+        rh = remaining_time / 3600
+        rm = (remaining_time % 3600) / 60
+        rs = (remaining_time % 3600) % 60
+        context['count_down'] = '%02d:%02d:%02d' % (rh, rm, rs)
+        return context
+
     def get(self, request, *args, **kwargs):
         action = request.GET.get('action')
         if action == 'check_current_draw':
@@ -32,16 +51,18 @@ class Home(TemplateView):
             draw = Draw.get_current()
             if draw.run_on:
                 run_on = draw.run_on
-                datetime.combine(run_on, datetime.min.time())
-                diff = now - draw.run_on
+                run_on = datetime.combine(run_on, datetime.min.time())
+                diff = now - run_on
                 if diff.total_seconds() >= 180:
                     draw.is_closed = True
+                else:
+                    draw.is_closed = False
             response = {'draw': draw.to_dict()}
             return HttpResponse(json.dumps(response))
         elif action == 'get_winning_number':
             draw = Draw.get_current()
             if draw.winner:
-                sub = DrawSubscription.objects.get(draw=draw, member=draw.winner)
+                sub = Subscription.objects.filter(member=draw.winner).order_by('-id')[0]
                 response = {'winner': '%06d' % sub.number}
                 draw.winner = None  # Cancel everything.
                 draw.save()
@@ -91,11 +112,21 @@ class DrawView(TemplateView):
         return super(DrawView, self).get(request, *args, **kwargs)
 
 
+class PreviousDraws(TemplateView):
+    template_name = 'zovizo/previous_draws.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(PreviousDraws, self).get_context_data(**kwargs)
+        context['subscription_list'] = DrawSubscription.objects.select_related('draw').filter(is_winner=True).order_by('-id')[:15]
+        return context
+
+
 class Profile(TemplateView):
     template_name = 'zovizo/profile.html'
 
     def get_context_data(self, **kwargs):
         context = super(Profile, self).get_context_data(**kwargs)
+        member = self.request.user
 
         draw = Draw.get_current()
         if datetime.now().hour < getattr(settings, 'DRAW_HOUR', 19):
@@ -104,9 +135,14 @@ class Profile(TemplateView):
             draw.jackpot = draw.participant_count * SUBSCRIPTION_FEES
         draw.winner_jackpot = draw.jackpot * (1 - COMPANY_SHARE/100)
         context['bundle_list'] = Bundle.objects.filter(is_active=True).order_by('amount')
-        wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=self.request.user.id)
+        wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=member.id)
         context['wallet'] = wallet
+        context['earnings_wallet'] = EarningsWallet.objects.using('zovizo_wallets').get(member_id=member.id)
         context['draw'] = draw
+        if wallet.balance > SUBSCRIPTION_FEES:
+            sub = Subscription.objects.filter(member=member, status=CONFIRMED).order_by('-id')[0]
+            sub.number = '%06d' % sub.number
+            context['sub'] = sub
         return context
 
     def get(self, request, *args, **kwargs):
@@ -182,6 +218,7 @@ def confirm_bundle_payment(request, *args, **kwargs):
     service.raise_balance(request.session['amount'], provider=request.session['mean'])
     object_id = request.session['object_id']
     obj = Subscription.objects.get(pk=object_id, status=PENDING)
+    obj.number = Subscription.objects.filter(status=CONFIRMED).count() + 1
     obj.status = CONFIRMED
     obj.save()
     set_counters(service)
@@ -193,13 +230,6 @@ def confirm_bundle_payment(request, *args, **kwargs):
     wallet.balance += obj.amount
     wallet.save()
     now = datetime.now()
-    draw = Draw.get_current()
-    if now.hour < getattr(settings, 'DRAW_HOUR', 19):
-        if wallet.balance == obj.amount:  # Means Member is refilling a previously empty balance
-            draw.participant_count += 1
-            draw.jackpot = draw.participant_count * SUBSCRIPTION_FEES
-            draw.save()
-
     subscriber, update = Subscriber.objects.get_or_create(member=member)
     set_counters(subscriber)
     subscriber.last_payment_on = now

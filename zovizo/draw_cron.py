@@ -3,7 +3,8 @@ import sys
 import logging
 from datetime import datetime
 
-sys.path.append("/home/ikwen/Clients/Zovizo")
+# sys.path.append("/home/ikwen/Clients/Zovizo")
+sys.path.append("/home/komsihon/Dropbox/PycharmProjects/Zovizo")
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "conf.settings")
 
