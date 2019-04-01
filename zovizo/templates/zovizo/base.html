@@ -19,7 +19,7 @@ License URL: http://creativecommons.org/licenses/by/3.0/
             <link href="{% static 'ikwen/css/bootstrap.min.css' %}" rel="stylesheet">
             <link href="{% static 'ikwen/css/font-awesome.min.css' %}" rel="stylesheet">
             <link rel="stylesheet" href="{% static 'ikwen/swiper/css/swiper.min.css' %}">
-            <link rel="stylesheet" href="{% static 'zovizo/css/main.css' %}">
+            <link rel="stylesheet" href="{% static 'zovizo/css/main.css' %}?v=19.3.10">
 		{% endblock %}
         {% block head_js %}
             <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -236,11 +236,7 @@ License URL: http://creativecommons.org/licenses/by/3.0/
         <script src="{% static 'ikwen/swiper/js/swiper.min.js' %}"></script>
         <script src="{% static 'ikwen/hammerjs/hammer.min.js' %}"></script>
         <script src="{% static 'ikwen/hammerjs/jquery.hammer.js' %}"></script>
-        <script src="{% static 'ikwen/js/ikwen-util.js' %}"></script>
-        <script type="text/javascript">
-            (function () {
-            })()
-		</script>
+        <script src="{% static 'ikwen/js/ikwen-util.js' %}?v=19.3.10"></script>
         {% block js %}{% endblock %}
     </body>
 </html>

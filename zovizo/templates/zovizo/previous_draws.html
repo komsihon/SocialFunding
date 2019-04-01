@@ -1,0 +1,38 @@
+{% extends 'zovizo/base.html' %}
+{% load i18n static user_agents humanize auth_tokens %}
+
+{% block meta %}
+    {{ block.super }}
+    {% include 'webnode/snippets/home_seo.html' %}
+{% endblock %}
+{% block page_title %}<title>{{ service.project_name }} - {% trans "Home" %}</title>{% endblock %}
+
+{% block head_style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'zovizo/css/zovizo_winner.css' %}?v=19.2.3.1">
+    <style>
+        h2 {font-size: 2.5vw; margin-top: 0 !important}
+        .main-banner {min-height: 300px}
+        .main-banner > div {background: rgba(0, 0, 0, .5); height: 360px; width: 100%}
+    </style>
+{% endblock %}
+
+{% block seo %}
+    <div class="hidden seo">
+        <h1>{{ config.slogan}}</h1>
+        <p>{{ config.description }}</p>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <h1>Précédents tirages</h1>
+	<div>
+        {% for sub in subscription_list %}
+        <div class="previous-draw" style="padding: 15vh 0;">
+            <p>{{ sub.draw.run_on|date }}</p>
+            <h2>{{ sub.draw.jackpot }} FCFA</h2>
+            <h3>{{ sub.number }}</h3>
+        </div>
+        {% endfor %}
+	</div>
+{% endblock %}

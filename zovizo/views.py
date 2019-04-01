@@ -29,19 +29,27 @@ class Home(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(Home, self).get_context_data(**kwargs)
         now = datetime.now()
-        hour = getattr(settings, 'DRAW_HOUR', 19)
-        if now.hour >= hour:
-            next_draw = datetime(now.year, now.month, now.day, hour) + timedelta(hours=24)
+        draw = Draw.get_current()
+        run_on = draw.run_on
+        run_on = datetime.combine(run_on, datetime.min.time())
+        diff = now - run_on
+        if 68400 < diff.total_seconds() < 68580:
+            count_down = '00:00:00'
         else:
-            next_draw = datetime(now.year, now.month, now.day, hour)
+            hour = getattr(settings, 'DRAW_HOUR', 19)
+            if now.hour >= hour:
+                next_draw = datetime(now.year, now.month, now.day, hour) + timedelta(hours=24)
+            else:
+                next_draw = datetime(now.year, now.month, now.day, hour)
 
-        diff = next_draw - now
-        remaining_time = int(diff.total_seconds())
-        context['remaining_time'] = remaining_time
-        rh = remaining_time / 3600
-        rm = (remaining_time % 3600) / 60
-        rs = (remaining_time % 3600) % 60
-        context['count_down'] = '%02d:%02d:%02d' % (rh, rm, rs)
+            diff = next_draw - now
+            remaining_time = int(diff.total_seconds())
+            context['remaining_time'] = remaining_time
+            rh = remaining_time / 3600
+            rm = (remaining_time % 3600) / 60
+            rs = (remaining_time % 3600) % 60
+            count_down = '%02d:%02d:%02d' % (rh, rm, rs)
+        context['count_down'] = count_down
         return context
 
     def get(self, request, *args, **kwargs):
@@ -49,14 +57,13 @@ class Home(TemplateView):
         if action == 'check_current_draw':
             now = datetime.now()
             draw = Draw.get_current()
-            if draw.run_on:
-                run_on = draw.run_on
-                run_on = datetime.combine(run_on, datetime.min.time())
-                diff = now - run_on
-                if diff.total_seconds() >= 180:
-                    draw.is_closed = True
-                else:
-                    draw.is_closed = False
+            run_on = draw.run_on
+            run_on = datetime.combine(run_on, datetime.min.time())
+            diff = now - run_on
+            if diff.total_seconds() >= 68580:
+                draw.is_closed = True
+            else:
+                draw.is_closed = False
             response = {'draw': draw.to_dict()}
             return HttpResponse(json.dumps(response))
         elif action == 'get_winning_number':
@@ -137,7 +144,8 @@ class Profile(TemplateView):
         context['bundle_list'] = Bundle.objects.filter(is_active=True).order_by('amount')
         wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=member.id)
         context['wallet'] = wallet
-        context['earnings_wallet'] = EarningsWallet.objects.using('zovizo_wallets').get(member_id=member.id)
+        ewallet, update = EarningsWallet.objects.using('zovizo_wallets').get_or_create(member_id=member.id)
+        context['earnings_wallet'] = ewallet
         context['draw'] = draw
         if wallet.balance > SUBSCRIPTION_FEES:
             sub = Subscription.objects.filter(member=member, status=CONFIRMED).order_by('-id')[0]
@@ -196,7 +204,8 @@ def set_bundle_payment_checkout(request, *args, **kwargs):
     bundle_id = request.POST['product_id']
     bundle = Bundle.objects.get(pk=bundle_id)
     amount = bundle.amount
-    obj = Subscription.objects.create(member=member, bundle=bundle, amount=amount)
+    number = Subscription.objects.all().count() + 1
+    obj = Subscription.objects.create(member=member, bundle=bundle, amount=amount, number=number)
     request.session['amount'] = amount
     request.session['model_name'] = 'zovizo.Subscription'
     request.session['object_id'] = obj.id
@@ -218,7 +227,6 @@ def confirm_bundle_payment(request, *args, **kwargs):
     service.raise_balance(request.session['amount'], provider=request.session['mean'])
     object_id = request.session['object_id']
     obj = Subscription.objects.get(pk=object_id, status=PENDING)
-    obj.number = Subscription.objects.filter(status=CONFIRMED).count() + 1
     obj.status = CONFIRMED
     obj.save()
     set_counters(service)

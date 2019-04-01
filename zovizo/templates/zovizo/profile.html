@@ -7,7 +7,7 @@
 
 {% block head_style %}
     {{ block.super }}
-    <link href="{% static 'zovizo/css/zovizo.css' %}?v=19.2.16" media="screen" rel="stylesheet" type="text/css" />
+    <link href="{% static 'zovizo/css/zovizo.css' %}" media="screen" rel="stylesheet" type="text/css" />
 {% endblock %}
 
 {% block content %}
@@ -25,14 +25,15 @@
                         </div>
                     {% elif sub %}
                         <p class="text-center" style="color: #11a539">
-                            {% trans "Your are registered for the next draw. Good luck !" %}
+                            {% trans "Your are registered for the next draw under the number ..." %}
                         </p>
+                        <h2 class="text-center">{{ sub.number }}</h2>
                     {% endif %}
                 </div>
 
-                {% if wallet.balance > 0 %}
+                {% if earnings_wallet.balance > 0 %}
                     <div class="wallet">
-                        <div style="font-size: 18px">{% blocktrans with balance=wallet.balance %}
+                        <div style="font-size: 18px">{% blocktrans with balance=earnings_wallet.balance %}
                             You have XAF <strong>{{ balance }}</strong> in your jackpot.
                         {% endblocktrans %}</div>
                         <button class="btn btn-success btn-block"
