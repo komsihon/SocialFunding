@@ -494,21 +494,21 @@
   }
 }
 
-#output1 {
+.output1 {
   -webkit-animation: boxShadow1 10s infinite;
   animation: boxShadow1 5s infinite;
   -webkit-animation-direction: alternate;
   animation-direction: alternate;
 }
 
-#output2 {
+.output2 {
   -webkit-animation: boxShadow2 10s infinite;
   animation: boxShadow2 5s infinite;
   -webkit-animation-direction: alternate;
   animation-direction: alternate;
 }
 
-#output3 {
+.output3 {
   -webkit-animation: boxShadow3 10s infinite;
   animation: boxShadow3 5s infinite;
   -webkit-animation-direction: alternate;

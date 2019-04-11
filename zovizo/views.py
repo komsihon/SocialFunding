@@ -71,8 +71,6 @@ class Home(TemplateView):
             if draw.winner:
                 sub = Subscription.objects.filter(member=draw.winner).order_by('-id')[0]
                 response = {'winner': '%06d' % sub.number}
-                draw.winner = None  # Cancel everything.
-                draw.save()
             else:
                 response = {'winner': None}
             return HttpResponse(json.dumps(response))
@@ -107,12 +105,10 @@ class DrawView(TemplateView):
             response = {'success': True}
             return HttpResponse(json.dumps(response))
         if action == 'get_winning_number':
-            draw = Draw.get_current()
+            draw = Draw.objects.filter(winner__isnull=False).order_by('-id')[0]
             if draw.winner:
-                sub = DrawSubscription.objects.get(draw=draw, member=draw.winner)
+                sub = Subscription.objects.filter(member=draw.winner).order_by('-id')[0]
                 response = {'winner': '%06d' % sub.number}
-                draw.winner = None  # Cancel everything.
-                draw.save()
             else:
                 response = {'winner': None}
             return HttpResponse(json.dumps(response))

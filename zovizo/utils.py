@@ -1,4 +1,5 @@
 from datetime import datetime
+import random as random_module
 from random import random
 
 from django.conf import settings
@@ -60,20 +61,22 @@ def pick_up_winner(debug=False):
             raise ValueError("Cannot pick-up a winner more than once. A winner already exists for this draw.")
 
     previous_winners = [obj.winner for obj in Draw.objects.exclude(pk=draw.id).order_by('-id')[:5] if obj.winner]
-    count = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw).count()
-    if count == 0:
+    # count = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw).count()
+    subscription_list = list(DrawSubscription.objects.filter(draw=draw))
+    if len(subscription_list) == 0:
         print("Not enough participants for the draw")
         return
-    ref = random()
-    try:
-        sub = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw, rand__gte=ref)[0]
-        print("Found GTE")
-    except:
-        try:
-            sub = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw, rand__lt=ref)[0]
-            print("Found LT")
-        except:
-            pass
+    sub = random_module.choice(subscription_list)
+    # ref = random()
+    # try:
+    #     sub = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw, rand__gte=ref)[0]
+    #     print("Found GTE")
+    # except:
+    #     try:
+    #         sub = DrawSubscription.objects.exclude(member__in=previous_winners).filter(draw=draw, rand__lt=ref)[0]
+    #         print("Found LT")
+    #     except:
+    #         pass
 
     if not debug:
         sub.is_winner = True
@@ -82,6 +85,8 @@ def pick_up_winner(debug=False):
     draw.save()
     notify_winner(draw.winner, debug)
     share_jackpot(debug)
+    if debug:
+        clean_up(draw)
 
 
 def notify_winner(winner, debug=False):
@@ -111,3 +116,10 @@ def share_jackpot(debug=False):
     earnings_wallet, update = EarningsWallet.objects.using('zovizo_wallets').get_or_create(member_id=winner.id)
     earnings_wallet.balance += winner_earnings
     earnings_wallet.save()
+
+
+def clean_up(draw):
+    draw.winner = None
+    draw.save()
+    DrawSubscription.objects.filter(draw=draw).update(is_winner=False)
+    print "Test draw cleaned up"

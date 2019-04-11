@@ -9,7 +9,7 @@
 
 {% block head_style %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static 'zovizo/css/zovizo_winner.css' %}?v=19.3.10">
+    <link rel="stylesheet" href="{% static 'zovizo/css/zovizo_winner.css' %}">
     <style>
         h2 {font-size: 24px; margin: 0 0 15px}
         body > .header {background: none}
@@ -211,15 +211,26 @@
                 <div class="modal-body text-center">
                     <div class="row">
                         <div class="col-md-8 col-md-offset-2 boxes text-center">
-                            <div class="row">
+                            <div id="number-animation" class="row">
                                 <div class="col-xs-4">
-                                    <div class="output" id="output1">--</div>
+                                    <div class="output output1">--</div>
                                 </div>
                                 <div class="col-xs-4">
-                                    <div class="output" id="output2">--</div>
+                                    <div class="output output2">--</div>
                                 </div>
                                 <div class="col-xs-4">
-                                    <div class="output" id="output3">--</div>
+                                    <div class="output output3">--</div>
+                                </div>
+                            </div>
+                            <div id="winning-number" class="row" style="display: none">
+                                <div class="col-xs-4">
+                                    <div class="output output1">--</div>
+                                </div>
+                                <div class="col-xs-4">
+                                    <div class="output output2">--</div>
+                                </div>
+                                <div class="col-xs-4">
+                                    <div class="output output3">--</div>
                                 </div>
                             </div>
                         </div>
@@ -286,17 +297,18 @@
                 }, 1000);
             }
 
-            var duration = 180000, started = false, animationTimer;
+            var duration = 180000, started = false, animationTimer, winner;
 
             function grabWinner() {
                 $.getJSON('', {action: 'get_winning_number'}, function(data) {
-                    clearInterval(animationTimer);
                     $('#modal-draw .modal-title').text("{% trans "Tirage terminé" %}");
-                    var winner = data.winner;
+                    $('#number-animation').hide();
+                    $('#winning-number').show();
+                    winner = data.winner;
                     if (!winner) return;
-                    $('#output1').text(winner.substr(0, 2));
-                    $('#output2').text(winner.substr(2, 2));
-                    $('#output3').text(winner.substr(4))
+                    $('#winning-number .output1').text(winner.substr(0, 2));
+                    $('#winning-number .output2').text(winner.substr(2, 2));
+                    $('#winning-number .output3').text(winner.substr(4));
                 })
             }
 
@@ -309,9 +321,9 @@
                         var rand1 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
                         var rand2 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
                         var rand3 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
-                        $('#output1').text(rand1);
-                        $('#output2').text(rand2);
-                        $('#output3').text(rand3)
+                        $('#number-animation .output1').text(rand1);
+                        $('#number-animation .output2').text(rand2);
+                        $('#number-animation .output3').text(rand3)
                     }
                 }, 100);
             }
