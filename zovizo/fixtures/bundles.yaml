@@ -1,0 +1,23 @@
+- model: zovizo.bundle
+  pk: 58d1000fa8feb6805199db01
+  fields:
+    amount: 3000
+    duration: 30
+
+- model: zovizo.bundle
+  pk: 58d1000fa8feb6805199db02
+  fields:
+    amount: 1500
+    duration: 15
+
+- model: zovizo.bundle
+  pk: 58d1000fa8feb6805199db03
+  fields:
+    amount: 700
+    duration: 7
+
+- model: zovizo.bundle
+  pk: 58d1000fa8feb6805199db04
+  fields:
+    amount: 100
+    duration: 1

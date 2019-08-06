@@ -30,14 +30,23 @@
                         <h2 class="text-center">{{ sub.number }}</h2>
                     {% endif %}
                 </div>
-
                 {% if earnings_wallet.balance > 0 %}
-                    <div class="wallet">
+                    <div class="wallet subtle-shade" style="padding: 40px 0 10px; margin-bottom: 30px">
                         <div style="font-size: 18px">{% blocktrans with balance=earnings_wallet.balance %}
-                            You have XAF <strong>{{ balance }}</strong> in your jackpot.
+                            You have XAF <strong>{{ balance }}</strong> in your WinJack.
                         {% endblocktrans %}</div>
-                        <button class="btn btn-success btn-block"
-                                style="margin: 15px auto; width: 240px">{% trans "Cash-Out" %}</button>
+                        {% if user.phone_verified %}
+                            <p class="text-muted" style="margin-top: 15px">{% blocktrans %}
+                                You will receive money on your account soon.
+                            {% endblocktrans %}</p>
+{#                            <button class="btn btn-success btn-block"#}
+{#                                    style="margin: 15px auto; width: 240px">{% trans "Top-up your account" %}</button>#}
+                        {% else %}
+                            <p class="text-muted" style="margin-top: 15px">{% trans "You must confirm your phone number to receive money on it." %}</p>
+                            <a class="btn btn-success btn-block" style="margin: 15px auto; width: 240px"
+                               href="{% url 'ikwen:phone_confirmation' %}">{% trans "Confirm your phone" %}</a>
+                        {% endif %}
+                        <div class="clearfix"></div>
                     </div>
                 {% endif %}
                 <div class="row">
@@ -124,7 +133,7 @@
                 <h2 class="section-title">{% trans "Bundles" %}</h2>
                 <div class="bundle-list row">
                     {% for bundle in bundle_list %}
-                    <div class="col-sm-4{% if forloop.counter == 4 %} col-sm-offset-4{% endif %}">
+                    <div class="col-sm-4{% if forloop.counter == 4 %} col-sm-offset-2{% endif %}">
                         <div class="bundle subtle-shade d-box text-center">
                             <h3 class="d-box-title">{{ bundle.duration }} {% trans "Days" %}</h3>
                             <div class="cost text-muted">

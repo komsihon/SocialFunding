@@ -23,11 +23,18 @@
                                 </a>
                             </li>
                         {% endif %}
-                        {% if perms.revival.ik_manage_profiles %}
+                        {% if perms.revival.ik_manage_profile %}
                             <li role="presentation" class="profile-tags">
                                 {% url 'revival:profiletag_list' as profiletag_list_url %}
                                 <a href="{{ profiletag_list_url }}">
                                     {% trans "Profiles" %}
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if perms.accesscontrol.sudo %}
+                            <li role="presentation" class="wallets">
+                                <a href="{% url 'zovizo:wallet_list' %}">
+                                    {% trans "Wallets" %}
                                 </a>
                             </li>
                         {% endif %}
@@ -43,8 +50,8 @@
                                     <li class="sms-campaigns">{% url 'echo:sms_campaign' as sms_campaign_url %}
                                         <a href="{{ sms_campaign_url }}">{% trans "SMS" %}</a>
                                     </li>
-                                    <li class="mail-campaigns">{% url 'echo:mail_campaign' as mail_campaign_url %}
-                                        <a href="javascript:;">{% trans "Mail" %}</a>
+                                    <li class="mail-campaigns">{% url 'echo:mailcampaign_list' as mail_campaign_url %}
+                                        <a href="{{ mail_campaign_url }}">{% trans "Mail" %}</a>
                                     </li>
                                 </ul>
                             </li>

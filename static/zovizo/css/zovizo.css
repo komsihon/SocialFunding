@@ -17,8 +17,8 @@
 .section {margin-bottom: 45px}
 .section.cash .d-box {height: 212px}
 .section.cash .d-box-title {margin-top: 10px}
-.subscription-status {font-size: 18px; margin-bottom: 60px}
-.section.cash .wallet {height: 150px;text-align: center;}
+.subscription-status {font-size: 18px;margin-bottom: 40px;}
+.section.cash .wallet {padding: 40px 0 30px;text-align: center;margin-bottom: 30px;}
 .picto {height: 50px}
 .bundle .btn {margin-top: 60px}
 .bundle > div {padding-left: 0}

@@ -1,0 +1,29 @@
+{% extends "core/object_list_base.html" %}
+{% load i18n humanize static auth_tokens admin_list %}
+
+{% block page_title %}
+<title> {% trans "Customer WinJacks" %} - Zovizo </title>
+{% endblock %}
+
+{% block head_style %}
+    {{ block.super }}
+    <style>
+        #admin-tools .btn.cta {display: none}
+    </style>
+{% endblock %}
+
+{% block js %}
+    {{ block.super }}
+    <script>
+        (function() {
+            $('div#admin-nav .wallets').addClass('active');
+            $('.cash-out').click(function() {
+                var walletId = $(this).data('id');
+                $.getJSON('', {action: 'notify_cashout', wallet_id: walletId}, function(data) {
+                    if (data.error) ikwen.showFloatingNotice(data.error);
+                    else ikwen.showFloatingNotice("Payment notification successful");
+                })
+            })
+        })()
+    </script>
+{% endblock %}

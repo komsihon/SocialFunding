@@ -1,6 +1,7 @@
 from datetime import datetime
 from random import random
 
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.db import models
 from djangotoolbox.fields import EmbeddedModelField, ListField
 
@@ -27,6 +28,22 @@ class Wallet(Model):
 class EarningsWallet(Model):
     member_id = models.CharField(max_length=24, db_index=True)
     balance = models.IntegerField(default=0, db_index=True)
+
+    def __unicode__(self):
+        member = self.member
+        return member.username + ' - ' + member.phone
+
+    def _get_member(self):
+        return Member.objects.get(pk=self.member_id)
+    member = property(_get_member)
+
+    def get_obj_details(self):
+        return intcomma(self.balance)
+
+
+class CashOut(Model):
+    member_id = models.CharField(max_length=24, db_index=True)
+    amount = models.IntegerField(default=0, db_index=True)
 
 
 class Bundle(Model):

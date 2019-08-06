@@ -1,22 +1,29 @@
 import json
+import traceback
 from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import TemplateView
 from django.utils.translation import gettext as _
 
+from ikwen.accesscontrol.models import Member
+from ikwen.conf.settings import WALLETS_DB_ALIAS
 from ikwen.core.constants import CONFIRMED, PENDING
-from ikwen.core.views import DashboardBase
+from ikwen.core.views import DashboardBase, HybridListView
 from ikwen.core.utils import get_mail_content, get_service_instance, set_counters, increment_history_field, \
-    slice_watch_objects, rank_watch_objects
+    slice_watch_objects, rank_watch_objects, send_sms
 from ikwen.revival.models import MemberProfile
 from ikwen.billing.mtnmomo.views import MTN_MOMO
 
+from echo.utils import count_pages
+from echo.models import Balance
 from zovizo.models import MEMBERSHIP, Project, Bundle, Subscription, Wallet, Draw, DrawSubscription, Subscriber, \
-    EarningsWallet
+    EarningsWallet, CashOut
 from zovizo.utils import pick_up_winner, register_members_for_next_draw
 
 SUBSCRIPTION_FEES = getattr(settings, 'SUBSCRIPTION_FEES', 100)
@@ -33,7 +40,7 @@ class Home(TemplateView):
         run_on = draw.run_on
         run_on = datetime.combine(run_on, datetime.min.time())
         diff = now - run_on
-        if 68400 < diff.total_seconds() < 68580:
+        if 86400 < diff.total_seconds() < 86460:
             count_down = '00:00:00'
         else:
             hour = getattr(settings, 'DRAW_HOUR', 19)
@@ -144,7 +151,12 @@ class Profile(TemplateView):
         context['earnings_wallet'] = ewallet
         context['draw'] = draw
         if wallet.balance > SUBSCRIPTION_FEES:
-            sub = Subscription.objects.filter(member=member, status=CONFIRMED).order_by('-id')[0]
+            try:
+                sub = Subscription.objects.filter(member=member, status=CONFIRMED).order_by('-id')[0]
+            except IndexError:
+                number = Subscription.objects.all().count() + 1
+                bundle = Bundle.objects.filter(is_active=True)[0]
+                sub = Subscription.objects.create(member=member, bundle=bundle, amount=bundle.amount, number=number)
             sub.number = '%06d' % sub.number
             context['sub'] = sub
         return context
@@ -283,3 +295,38 @@ class Dashboard(DashboardBase):
         context['subscribers_report'] = subscribers_report
         return context
 
+
+class WalletList(HybridListView):
+    queryset = EarningsWallet.objects.using('zovizo_wallets').filter(balance__gt=0)
+    template_name = 'zovizo/wallet_list.html'
+    html_results_template_name = 'zovizo/snippets/wallet_list_results.html'
+
+    def get(self, request, *args, **kwargs):
+        action = request.GET.get('action')
+        if action == 'notify_cashout':
+            wallet_id = request.GET['wallet_id']
+            return self.notify_cashout(wallet_id)
+        return super(WalletList, self).get(request, *args, **kwargs)
+
+    def notify_cashout(self, wallet_id):
+        service = get_service_instance()
+        wallet = EarningsWallet.objects.using('zovizo_wallets').get(pk=wallet_id)
+        member = Member.objects.get(pk=wallet.member_id)
+        balance, update = Balance.objects.using(WALLETS_DB_ALIAS).get_or_create(service_id=service.id)
+        try:
+            with transaction.atomic(using='zovizo_wallets'):
+                CashOut.objects.using('zovizo_wallets').create(member_id=wallet.member_id, amount=wallet.balance)
+                wallet.balance = 0
+                wallet.save()
+                amount = intcomma(wallet.balance)
+                notice = _("Congratulations! You will receive a XAF %(amount)s money transfer on your phone number "
+                           "%(phone)s as payment for your WinJack." % {'amount': amount, 'phone': member.phone})
+                page_count = count_pages(notice)
+                balance.sms_count -= page_count
+                balance.save()
+                send_sms(member.phone, notice)
+        except:
+            response = {'error': traceback.format_exc()}
+        else:
+            response = {'success': True}
+        return HttpResponse(json.dumps(response))
