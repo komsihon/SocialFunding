@@ -7,6 +7,7 @@ from djangotoolbox.fields import EmbeddedModelField, ListField
 
 from ikwen.core.constants import PENDING
 from ikwen.core.models import Model, AbstractWatchModel
+from ikwen.core.fields import MultiImageField
 from ikwen.accesscontrol.models import Member
 
 
@@ -47,9 +48,15 @@ class CashOut(Model):
 
 
 class Bundle(Model):
+    UPLOAD_TO = 'bundles/'
     amount = models.IntegerField()
     duration = models.IntegerField()
     is_active = models.BooleanField(default=True)
+    show_on_home = models.BooleanField(default=False)
+    cover = MultiImageField(upload_to=UPLOAD_TO, blank=True, null=True)
+
+    def __unicode__(self):
+        return str(self.amount)
 
 
 class Subscription(Model):

@@ -137,7 +137,7 @@
                         <div class="bundle subtle-shade d-box text-center">
                             <h3 class="d-box-title">{{ bundle.duration }} {% trans "Days" %}</h3>
                             <div class="cost text-muted">
-                                {% blocktrans with amount=bundle.amount|intcomma %}XAF {{ amount }}{% endblocktrans %}
+                                {% blocktrans with amount=bundle.amount|intcomma %}<span class="currency">XAF</span> {{ amount }}{% endblocktrans %}
                             </div>
                             <button class="btn btn-success btn-block payment-start"
                                     data-product-id="{{ bundle.id }}">{% trans "Subscribe Now" %}</button>

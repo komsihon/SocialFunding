@@ -14,7 +14,7 @@ from django.utils.translation import gettext as _
 from ikwen.accesscontrol.models import Member
 from ikwen.conf.settings import WALLETS_DB_ALIAS
 from ikwen.core.constants import CONFIRMED, PENDING
-from ikwen.core.views import DashboardBase, HybridListView
+from ikwen.core.views import DashboardBase, HybridListView, ChangeObjectBase
 from ikwen.core.utils import get_mail_content, get_service_instance, set_counters, increment_history_field, \
     slice_watch_objects, rank_watch_objects, send_sms
 from ikwen.revival.models import MemberProfile
@@ -22,12 +22,14 @@ from ikwen.billing.mtnmomo.views import MTN_MOMO
 
 from echo.utils import count_pages
 from echo.models import Balance
+
+from zovizo.admin import BundleAdmin
 from zovizo.models import MEMBERSHIP, Project, Bundle, Subscription, Wallet, Draw, DrawSubscription, Subscriber, \
     EarningsWallet, CashOut
 from zovizo.utils import pick_up_winner, register_members_for_next_draw
 
 SUBSCRIPTION_FEES = getattr(settings, 'SUBSCRIPTION_FEES', 100)
-COMPANY_SHARE = getattr(settings, 'SUBSCRIPTION_FEES', 15)
+COMPANY_SHARE = getattr(settings, 'COMPANY_SHARE', 25)
 
 
 class Home(TemplateView):
@@ -57,6 +59,7 @@ class Home(TemplateView):
             rs = (remaining_time % 3600) % 60
             count_down = '%02d:%02d:%02d' % (rh, rm, rs)
         context['count_down'] = count_down
+        context['bundle_list'] = Bundle.objects.filter(show_on_home=True).order_by('amount')
         return context
 
     def get(self, request, *args, **kwargs):
@@ -330,3 +333,13 @@ class WalletList(HybridListView):
         else:
             response = {'success': True}
         return HttpResponse(json.dumps(response))
+
+
+class BundleList(HybridListView):
+    model = Bundle
+
+
+class ChangeBundle(ChangeObjectBase):
+    model = Bundle
+    model_admin = BundleAdmin
+    label_field = 'duration'

@@ -12,9 +12,8 @@ from ikwen.core.utils import get_mail_content, get_service_instance
 from zovizo.models import Wallet, Draw, DrawSubscription, EarningsWallet
 
 SUBSCRIPTION_FEES = getattr(settings, 'SUBSCRIPTION_FEES', 100)
-WINNER_SHARE = getattr(settings, 'SUBSCRIPTION_FEES', 75)
-INCUBATOR_SHARE = getattr(settings, 'SUBSCRIPTION_FEES', 10)
-COMPANY_SHARE = getattr(settings, 'SUBSCRIPTION_FEES', 15)
+WINNER_SHARE = getattr(settings, 'WINNER_SHARE', 75)
+COMPANY_SHARE = getattr(settings, 'COMPANY_SHARE', 25)
 
 
 def register_members_for_next_draw(debug=False):

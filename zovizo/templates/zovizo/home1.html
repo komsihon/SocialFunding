@@ -1,20 +1,385 @@
-{% extends "core/base_bs.html" %}
-{% load i18n humanize static auth_tokens admin_list %}
+{% extends 'zovizo/base.html' %}
+{% load i18n static user_agents humanize auth_tokens %}
 
-{% block page_title %}
-<title> Zovizo - {% trans "Home" %} </title>
+{% block meta %}
+    {{ block.super }}
+    {% include 'webnode/snippets/home_seo.html' %}
 {% endblock %}
+{% block page_title %}<title>{{ service.project_name }} - {% trans "Home" %}</title>{% endblock %}
 
 {% block head_style %}
     {{ block.super }}
     <link href="{% static 'zovizo/css/zovizo.css' %}" media="screen" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="{% static 'zovizo/css/zovizo_winner.css' %}">
+    <style>
+        h2 {font-size: 24px; margin: 0 0 15px}
+        body > .header {background: none}
+        body > .header a {color: #fff}
+        .main-banner {color: #fff; height: 100vh}
+        .main-banner .overlay {background: rgba(0, 0, 0, .8); height: 100%; width: 100%}
+        .main-banner > div {padding-top: 10vh}
+        .main-banner > div {padding-top: 10vh}
+        .main-banner h1 {font-size: 4.5vh}
+        .overlay {background: rgba(0, 0, 0, .6); height: 100%; width: 100%}
+        .parallax {
+            background-image: url({% static 'zovizo/img/parallax_bg.jpg' %});
+            height: 100%;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            padding: 0
+        }
+        .count-down {font-size: 30px; line-height: 40px}
+        .draw-starting {color: #66bf39; display: none}
+        .current-winner{margin-top: 10vh; font-size: 18px}
+        .parallax {min-height: 450px; }
+        .parallax > div {background: rgba(0,0,0,.7); float: left; height: 450px; padding-top: 70px; width: 100%}
+        .how-it-works {background-color: #f8f8f8}
+        .how-it-works h3 {color: #545454; font-size: 21px; font-weight: 700}
+        .picto-features {height: 50px}
+        .call-to-action {background: url({% static 'zovizo/img/ZOviZO-[baniere].png' %}) no-repeat center; background-size: cover}
+        @media (max-width: 767px) {
+            body > section {padding: 35px 0}
+            .call-to-action {min-height: 240px}
+        }
+        @media (min-width: 768px) {
+            .main-banner > div {padding-top: 30vh}
+            .main-banner h1 {font-size: 8vh}
+            h2 {font-size: 33px}
+            .our-mission {min-height: 580px}
+            .our-mission .content {margin-top: 70px}
+            .call-to-action {min-height: 300px}
+        }
+        @media (min-width: 992px) {
+            .how-it-works .about {margin-top: 150px}
+            .how-it-works .container {margin-top: 70px}
+            .parallax {min-height: 400px; }
+            .parallax > div {height: 400px}
+            .our-mission .content {margin-top: 120px}
+        }
+    </style>
 {% endblock %}
-
-{% block content %}
-    <div id="container" class="admin edge-panel-left-container">
-        <div
+{% block seo %}
+    <div class="hidden seo">
+        <h1>{{ config.slogan}}</h1>
+        <p>{{ config.description }}</p>
     </div>
+{% endblock %}
+{% block banner %}
+    <section class="fw-section banner main-banner">
+        <div class="overlay">
+            <div class="col-md-6 col-md-offset-3 text-center mobile-adjust text-has-shade">
+                <h1>Prochain tirage dans ...</h1>
+                <p class="count-down">{{ count_down }}</p>
+                <p class="draw-starting">Ça commence dans quelques secondes ...</p>
+                <a class="btn btn-outline-secondary animated pulse mobile-adjust" href="{% url 'ikwen:do_sign_in' %}"
+                   style=" font-size: 20px; margin: 20px; height: 45px; min-width: 240px;">
+                    Je m'inscris
+                </a>
+{#                <div class="current-winner">#}
+{#                    <div>Gagnant du {{ last_draw.run_on|date }}: <span>{{ sub.number }}</span></div>#}
+{#                    <div style="font-size: .9em; margin-top: 5px"><a href="#">Voir les tirages</a></div>#}
+{#                </div>#}
+                <div class="anchor">
+                    <a class="js-scrollTo" href="#banniere-top" style="font-size: 100px; text-decoration: none"><i class="fa fa-caret-down" style="color: white; display: block; height: 15px;"></i><i class="fa fa-angle-double-down" style="color: white;"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+{% block content %}
+    <section class="feature h-section bundles">
+        <div class="container">
+            <div class="row" style="margin: 0 -15px">
+                <h2>{% trans "Choose a bundle and win !" %}</h2>
+                <div class="col-sm-10 col-sm-offset-1">
+                    <div class="row bundle-list" style="margin: 0 -15px">
+                        {% for bundle in bundle_list %}
+                        <div class="col-xs-4">
+                            <div class="bundle has-shade d-box text-center">
+                                <h3 class="d-box-title">{{ bundle.duration }} {% trans "Days" %}</h3>
+                                <div class="cost text-muted">
+                                    {% blocktrans with amount=bundle.amount|intcomma %}<span class="currency">XAF</span> {{ amount }}{% endblocktrans %}
+                                </div>
+                                <button class="btn btn-success btn-block payment-start"
+                                        data-product-id="{{ bundle.id }}">{% trans "Subscribe" context 'Subscribe to a bundle' %}</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </section>
+
+    <section class="feature h-section how-it-works">
+        <div class="container">
+            <div class="row">
+				<div class="col-md-5 about">
+					<h2>Comment ça marche ?</h2>
+					<p>
+                        Zovizo invente le financement aléatoire à coût dérisoire.
+                        Tous les jours vous pouvez être l'heureux gagnant de la cagnotte en jeu. Ça se passe
+                        en 4 étapes simples:
+					</p>
+				</div>
+                <div class="col-md-6 pull-right steps">
+                    <div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <img class="picto-features" alt="picto_better_customer_compréhension"
+                                     src="{% static 'zovizo/img/picto-suscribe.png'  %}" />
+                                <h3>{% trans "Inscrivez-vous" %}</h3>
+                                <p class="mobile-adjust">
+                                    Utilisez votre numéro de téléphone, email et nom pour vous inscrire et vous connecter sur zovizo.com
+                                </p>
+                            </div>
+                            <div class="col-sm-6">
+                                <img class="picto-features" alt="picto_better_customer_compréhension"
+                                     src="{% static 'zovizo/img/picto-buy.png'  %}" />
+                                <h3>{% trans "Achetez votre pack" %}</h3>
+                                <p class="mobile-adjust">
+                                    Souscrivez au pack de votre choix. 700F pour 7jours, 1500F pour 15jours ou 3000F pour 30 jours.
+                                    Vous achetez votre pack par MTN MoMo ou Orange Money.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 5vh">
+                            <div class="col-sm-6">
+                                <img class="picto-features" alt="picto_better_customer_compréhension"
+                                     src="{% static 'zovizo/img/picto-connected.png' %}" />
+                                <h3>{% trans "Vous êtes inscrits pour le tirage" %}</h3>
+                                <p class="mobile-adjust">
+                                    Chaque jour, un montant de 100FCFA sera débité de votre cotisation pour participer au tirage du jour.
+                                </p>
+                            </div>
+                            <div class="col-sm-6">
+                                <img class="picto-features" alt="picto_better_customer_compréhension"
+                                     src="{% static 'zovizo/img/picto-win.png' %}" />
+                                <h3>{% trans "Gagnez" %}</h3>
+                                <p class="mobile-adjust">
+                                    Un puissant algorithme ira choisir le numéro du solidario qui bénéficiera de la cagnotte du jour.
+                                    Elle est l'équivalent de 85% du montant total des cotisations
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </section>
+
+    <section class="our-mission h-section">
+        <div class="container">
+            <div class="text-center">
+                <h2 style="font-weight: 600">Notre Mission</h2>
+                <p>Devenir des acteurs du changement.</p>
+            </div>
+            <div class="row">
+                <div class="col-sm-5">
+                    <img alt="" src="{% static 'zovizo/img/our-mission.png' %}" class="img-responsive">
+                </div>
+                <div class="col-sm-6 col-sm-offset-1 content">
+                    <p>
+                        Soyons intelligents et productifs. Créons ensemble une dynamique qui impulsera une nouvelle
+                        vision tout en impactant positivement sur la vie de nombreuses personnes. Créons
+                        une communauté forte qui joue la carte locale.
+                    </p>
+                    <p>
+                        Ensemble nous pouvons faire reculer le standard de la pauvreté
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="parallax">
+        <div>
+            <div class="col-sm-8 col-sm-offset-2 text-center" style="color: #FFFFFF">
+                <h2 style="color: #fff">Incubateur</h2>
+                <p>
+                    Réduire le chômage, la raison même d'être de Zovizo
+                </p>
+                <p style="font-size: 15px; line-height: 3.5vh; margin-top: 8vh; text-align: left">
+                    Zovizo réinvestit vos cotisations dans un incubateur moderne ouvert pour vous, afin d’encourager
+                    et de soutenir des start ups.
+                    Un appel à projet sera effectué et à l’issue d’une sélection rigoureuse, le porteur du projet
+                    sera suivi et accompagné sur le plan technique, et surtout financier.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="call-to-action">
+        <div class="container text-center">
+            <h2>Nos tirages on lieu chaque jour à 19h GMT...</h2>
+            <a class="btn btn-outline-black animated pulse mobile-adjust" href="{% url 'ikwen:do_sign_in' %}"
+               style=" font-size: 20px; margin: 20px; height: 45px; min-width: 240px;">
+                    Je m'inscris
+            </a>
+        </div>
+    </section>
+{#    <div class="show-draw" style="position: fixed; bottom: 0; height: 40px; width: 40px"></div>#}
+    <div class="modal fade" id="modal-draw" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg draw-stage" role="document">
+            <div class="modal-content modal-info">
+                <div class="modal-header text-center">
+                    <button style="color: #fff" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title text-has-shade">{% trans "Tirage en cours" %}</h4>
+                    <h2 class="jackpot text-has-shade"><span></span> FCFA</h2>
+                    <p>{% trans "À gagner" %}</p>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="row">
+                        <div class="col-md-8 col-md-offset-2 boxes text-center">
+                            <div id="number-animation" class="row">
+                                <div class="col-xs-4">
+                                    <div class="output output1">--</div>
+                                </div>
+                                <div class="col-xs-4">
+                                    <div class="output output2">--</div>
+                                </div>
+                                <div class="col-xs-4">
+                                    <div class="output output3">--</div>
+                                </div>
+                            </div>
+                            <div id="winning-number" class="row" style="display: none">
+                                <div class="col-xs-4">
+                                    <div class="output output1">--</div>
+                                </div>
+                                <div class="col-xs-4">
+                                    <div class="output output2">--</div>
+                                </div>
+                                <div class="col-xs-4">
+                                    <div class="output output3">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="cta-text">{% blocktrans %}
+                        Vous avez manqué ce tirage ? Ne ratez pas le prochain.
+                    {% endblocktrans %}</p>
+                    <div class="text-center cta">
+                        <a href="{% url 'ikwen:sign_in' %}" class="btn btn-success">{% trans "Inscrivez-vous sur Zovizo" %}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'billing/snippets/modal_payment_options.html' %}
 {% endblock %}
 
 {% block js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        (function() {
+            var mySwiper = new Swiper ('.swiper-container', {
+                // Optional parameters
+                direction: 'horizontal',
+                loop: false,
+
+                // If we need pagination
+                pagination: {
+                    el: '.swiper-pagination',
+                },
+
+                // Navigation arrows
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev'
+                },
+                autoplay: 5000
+            });
+
+            $('.swiper-container').on('mouseenter', function(e){
+                console.log('stop autoplay');
+                mySwiper.stopAutoplay();
+            }).on('mouseleave', function(e){
+                console.log('start autoplay');
+                mySwiper.startAutoplay();
+            });
+
+            $('.show-draw').click(function() {
+                $('#modal-draw').modal('show')
+            });
+
+            function countDown() {
+                var remaining = {{ remaining_time }};
+                var countDownId = setInterval(function() {
+                    if (remaining === 0) {
+                        clearInterval(countDownId);
+                        $('.draw-starting').fadeIn();
+                        return;
+                    }
+                    remaining -= 1;
+                    var hour = Math.floor(remaining / 3600),
+                        min = Math.floor((remaining % 3600) / 60),
+                        sec = (remaining % 3600) % 60;
+                    $('.count-down').text(hour.pad(2) + ':' + min.pad(2) + ':' + sec.pad(2));
+                }, 1000);
+            }
+
+            var duration = 60000, started = false, animationTimer, winner;
+
+            function grabWinner() {
+                $.getJSON('', {action: 'get_winning_number'}, function(data) {
+                    $('#modal-draw .modal-title').text("{% trans "Draw ended" %}");
+                    $('#number-animation').hide();
+                    $('#winning-number').show();
+                    winner = data.winner;
+                    if (!winner) return;
+                    $('#winning-number .output1').text(winner.substr(0, 2));
+                    $('#winning-number .output2').text(winner.substr(2, 2));
+                    $('#winning-number .output3').text(winner.substr(4));
+                })
+            }
+
+            function animateNumbers() {
+                var start = new Date().getTime();
+                animationTimer = setInterval(function() {
+                    if (new Date().getTime() - start > duration) {
+                        clearInterval(animationTimer); // Stop the loop
+                    } else {
+                        var rand1 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
+                        var rand2 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
+                        var rand3 = '' + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
+                        $('#number-animation .output1').text(rand1);
+                        $('#number-animation .output2').text(rand2);
+                        $('#number-animation .output3').text(rand3)
+                    }
+                }, 100);
+            }
+
+            function grabCurrentDraw() {
+                $.getJSON('', {action: 'check_current_draw'}, function(data) {
+                    if (!data.draw.is_active && !data.draw.is_closed) {
+                        started = true;
+                        $('#modal-draw .jackpot span').text(data.draw.jackpot);
+                    }
+                });
+            }
+
+            function checkCurrentDraw() {
+                var checkerTimer = setInterval(function() {
+                    if (started) {
+                        clearInterval(checkerTimer);
+                        $('#modal-draw').modal('show');
+                        $('.draw-starting').fadeOut();
+                        animateNumbers();
+                        setTimeout(grabWinner, duration);
+                        return;
+                    }
+                    grabCurrentDraw();
+                }, 10000)
+            }
+            countDown();
+            grabCurrentDraw();
+            checkCurrentDraw();
+        })()
+    </script>
 {% endblock %}

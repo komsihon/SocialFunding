@@ -2,7 +2,6 @@
 {% load i18n humanize staticfiles cache auth_tokens %}
 
 {% block admin_nav %}
-    {% cache 600 sidebar user.username %}
     <div id="admin-nav" class="edge-panel-left">
         <div class="wrapper">
             <div class="stage">
@@ -15,19 +14,11 @@
                     {% if perms.echo.ik_manage_messaging or perms.revival.ik_manage_profiles or perms.rewarding.ik_manage_rewarding %}
                     <div class="divider"></div>
                     <ul class="nav nav-pills nav-stacked">
-                        {% if perms.rewarding.ik_manage_rewarding %}
-                            <li role="presentation" class="continuous-rewarding">
-                                {% url 'rewarding:configuration' as rewarding_configuration_url %}
-                                <a href="{{ rewarding_configuration_url }}" title="Continuous Rewarding">
-                                    {% trans "Continuous Rewarding" %}
-                                </a>
-                            </li>
-                        {% endif %}
-                        {% if perms.revival.ik_manage_profile %}
-                            <li role="presentation" class="profile-tags">
-                                {% url 'revival:profiletag_list' as profiletag_list_url %}
-                                <a href="{{ profiletag_list_url }}">
-                                    {% trans "Profiles" %}
+                        {% if perms.accesscontrol.sudo %}
+                            <li role="presentation" class="bundles">
+                                {% url 'zovizo:bundle_list' as bundle_list_url %}
+                                <a href="{{ bundle_list_url }}">
+                                    {% trans "Bundles" %}
                                 </a>
                             </li>
                         {% endif %}
@@ -59,6 +50,32 @@
                     </ul>
                     {% endif %}
                     {% if perms.accesscontrol.sudo %}
+                        <div class="divider"></div>
+                        <ul class="nav nav-pills nav-stacked">
+                        {% if perms.daraja.ik_manage_daraja %}
+                            <li role="presentation" class="daraja">
+                                <a href="javascript:;" data-toggle="collapse" data-target="#daraja" aria-expanded="true">
+                                    Daraja <i class="fa fa-fw fa-caret-down"></i>
+                                    <span class="label label-danger" style="text-transform: capitalize">New</span>
+                                </a>
+                                <ul id="daraja" class="nav nav-pills nav-stacked collapse" aria-expanded="true"
+                                    style="padding-left: 15px">
+                                    <li role="presentation" class="daras">
+                                        {% url 'daraja:dara_list' as dara_list_url %}
+                                        <a href="{{ dara_list_url }}" title="Daras">{% trans "Daras" %}</a>
+                                    </li>
+                                    <li role="presentation"
+                                        class="dara-requests">{% url 'daraja:dara_request_list' as dara_request_list_url %}
+                                        <a href="{{ dara_request_list_url }}">{% trans "Requests" context 'Daras requests' %}</a>
+                                    </li>
+                                    <li role="presentation"
+                                        class="daraja-configuration">{% url 'daraja:configuration' as configuration_url %}
+                                        <a href="{{ configuration_url }}">{% trans "Configuration" %}</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% endif %}
+                        </ul>
                         <div class="divider"></div>
                         <ul class="nav nav-pills nav-stacked">
                             {% if settings.IS_PROVIDER %}
@@ -108,5 +125,4 @@
             </div>
         </div>
     </div>
-    {% endcache %}
 {% endblock %}
