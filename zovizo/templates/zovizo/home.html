@@ -9,7 +9,7 @@
 
 {% block head_style %}
     {{ block.super }}
-    <link href="{% static 'zovizo/css/zovizo.css' %}?v=19.12.28" media="screen" rel="stylesheet" type="text/css" />
+    <link href="{% static 'zovizo/css/zovizo.css' %}?v=20.02.18.19" media="screen" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="{% static 'zovizo/css/zovizo_winner.css' %}">
     <style>
         h2 {font-size: 24px; margin: 0 0 15px}
@@ -19,7 +19,6 @@
         a.btn {line-height: 32px}
         .main-banner {color: #fff; height: 100vh}
         .main-banner .overlay {background: rgba(0, 0, 0, .8); height: 100%; width: 100%}
-        .main-banner > div {padding-top: 10vh}
         .main-banner > div {padding-top: 10vh}
         .main-banner h1 {font-size: 4.5vh}
         .overlay {background: rgba(0, 0, 0, .6); height: 100%; width: 100%}
@@ -40,9 +39,13 @@
         .how-it-works h3 {color: #545454; font-size: 21px; font-weight: 700}
         .picto-features {height: 50px}
         .call-to-action {background: url({% static 'zovizo/img/ZOviZO-[baniere].png' %}) no-repeat center; background-size: cover}
+
         @media (max-width: 767px) {
             body > section {padding: 35px 0}
+            .main-banner > div {padding-top: 30vh}
+            .main-banner h1 {font-size: 6.5vh}
             .call-to-action {min-height: 240px}
+            .affiliation .btn-container {text-align: center}
         }
         @media (min-width: 768px) {
             .main-banner > div {padding-top: 30vh}
@@ -67,9 +70,9 @@
     </div>
 {% endblock %}
 {% block banner %}
-    <section class="fw-section banner main-banner">
-        <div class="overlay">
-        <div class="col-md-6 col-md-offset-3 text-center mobile-adjust text-has-shade">
+    <section class="fw-section banner main-banner" style="background-image: url({% static 'zovizo/img/zovizo_balloons_bg.jpg' %});">
+{#        <div class="overlay">#}
+        <div class="col-sm-6 col-sm-offset-1 col-md-5 col-md-offset-1 text-has-shade">
             <h1>{% trans "Random crowdfunding at very low cost ..." %}</h1>
             <p class="draw-starting">{% blocktrans %}
             {% endblocktrans %}</p>
@@ -85,7 +88,7 @@
                 <a class="js-scrollTo" href="#banniere-top" style="font-size: 100px; text-decoration: none"><i class="fa fa-caret-down" style="color: white; display: block; height: 15px;"></i><i class="fa fa-angle-double-down" style="color: white;"></i></a>
             </div>
         </div>
-        </div>
+{#        </div>#}
     </section>
 {% endblock %}
 {% block content %}
@@ -111,10 +114,10 @@
         <div class="container">
             <div class="row" style="margin: 0 -15px">
                 <h2>{% trans "Choose a bundle and win !" %}</h2>
-                <div class="col-sm-10 col-sm-offset-1">
+                <div class="col-xs-12">
                     <div class="row bundle-list" style="margin: 0 -15px">
                         {% for bundle in bundle_list %}
-                        <div class="col-xs-4">
+                        <div class="col-sm-3">
                             <div class="bundle has-shade d-box text-center">
                                 <h3 class="d-box-title">
                                     {{ bundle.duration }}
@@ -126,7 +129,7 @@
                                     <button class="btn btn-success btn-block payment-start"
                                             data-product-id="{{ bundle.id }}">{% trans "Subscribe" context 'Subscribe to a bundle' %}</button>
                                 {% else %}
-                                    <button class="btn btn-success btn-block payment-start"
+                                    <button class="btn btn-success btn-block login-first"
                                             data-product-id="{{ bundle.id }}">{% trans "Subscribe" context 'Subscribe to a bundle' %}</button>
                                 {% endif %}
                             </div>
@@ -197,9 +200,9 @@
     </section>
 
     <section style="background: #f8f8f8">
-        <div class="container">
+        <div class="container affiliation">
             <div class="row">
-                <div class="col-sm-2 text-center">
+                <div class="col-sm-2 col-xs-6 col-xs-offset-3" style="margin-bottom: 30px">
                     <img src="{% static 'zovizo/img/logo-daraja-full.png' %}" alt="" class="img-responsive" />
                 </div>
                 <div class="col-sm-8 pull-right">
@@ -208,10 +211,12 @@
                         Tell a friend about Zovizo and invite him to register and play. You will get 10% out of every pack
                         he buys and jackpots he wins !
                     {% endblocktrans %}</p>
-                    <a href="https://ikwen.com/daraja/invitation/zovizo" target="_blank"
-                       class="btn btn-success" style="margin-top: 30px; min-width: 240px">
-                        {% trans "Join us on Daraja" %}
-                    </a>
+                    <div class="btn-container">
+                        <a href="https://ikwen.com/daraja/invitation/zovizo" target="_blank"
+                           class="btn btn-success" style="margin-top: 30px; min-width: 240px">
+                            {% trans "Join us on Daraja" %}
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -227,34 +232,28 @@
                 <div class="col-sm-5">
                     <img alt="" src="{% static 'zovizo/img/our-mission.png' %}" class="img-responsive">
                 </div>
-                <div class="col-sm-6 col-sm-offset-1 content">
+                <div class="col-sm-6 col-sm-offset-1 content">{% blocktrans %}
                     <p>
-                        Soyons intelligents et productifs. Créons ensemble une dynamique qui impulsera une nouvelle
-                        vision tout en impactant positivement sur la vie de nombreuses personnes. Créons
-                        une communauté forte qui joue la carte locale.
+                        Be smart and productive. Let’s build together a dynamic that will bring us to another sight by
+                        affecting positively on many people lives. Build a strong community that plays the card of local.
                     </p>
-                    <p>
-                        Ensemble nous pouvons faire reculer le standard de la pauvreté
-                    </p>
-                </div>
+                    <p>Together, we can fight against poverty and lower poverty rate.</p>
+                {% endblocktrans %}</div>
             </div>
         </div>
     </section>
 
     <section class="parallax">
         <div>
-            <div class="col-sm-8 col-sm-offset-2 text-center" style="color: #FFFFFF">
-                <h2 style="color: #fff">Incubateur</h2>
-                <p>
-                    Réduire le chômage, la raison même d'être de Zovizo
-                </p>
+            <div class="col-sm-8 col-sm-offset-2 text-center" style="color: #FFFFFF">{% blocktrans %}
+                <h2 style="color: #fff">Incubator</h2>
+                <p>Reduce unemployment, is the mainspring of Zovizo</p>
                 <p style="font-size: 15px; line-height: 3.5vh; margin-top: 8vh; text-align: left">
-                    Zovizo réinvestit vos cotisations dans un incubateur moderne ouvert pour vous, afin d’encourager
-                    et de soutenir des start ups.
-                    Un appel à projet sera effectué et à l’issue d’une sélection rigoureuse, le porteur du projet
-                    sera suivi et accompagné sur le plan technique, et surtout financier.
+                    Zovizo reinvest your contributions in a modern incubator that is opened for you in order to
+                    encourage and support startups. A call for projects will be made and following a rigorous selection
+                    process, the project director will be technically supported, and funded in a special way.
                 </p>
-            </div>
+            {% endblocktrans %}</div>
         </div>
     </section>
 {#    <div class="show-draw" style="position: fixed; bottom: 0; height: 40px; width: 40px"></div>#}
@@ -265,9 +264,9 @@
                     <button style="color: #fff" type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title text-has-shade">{% trans "Tirage en cours" %}</h4>
+                    <h4 class="modal-title text-has-shade">{% trans "Draw running ..." %}</h4>
                     <h2 class="jackpot text-has-shade"><span></span> FCFA</h2>
-                    <p>{% trans "À gagner" %}</p>
+                    <p>{% trans "To win" %}</p>
                 </div>
                 <div class="modal-body text-center">
                     <div class="row">

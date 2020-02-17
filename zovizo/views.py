@@ -1,23 +1,29 @@
 import json
+import string
 import traceback
+import logging
 from datetime import datetime, timedelta
+import random
 
+import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.generic import TemplateView
 from django.utils.translation import gettext as _
 
 from ikwen.accesscontrol.models import Member
 from ikwen.conf.settings import WALLETS_DB_ALIAS
 from ikwen.core.constants import CONFIRMED, PENDING
+from ikwen.core.models import Service
 from ikwen.core.views import DashboardBase, HybridListView, ChangeObjectBase
 from ikwen.core.utils import get_mail_content, get_service_instance, set_counters, increment_history_field, \
-    slice_watch_objects, rank_watch_objects, send_sms
+    slice_watch_objects, rank_watch_objects, send_sms, add_database
 from ikwen.revival.models import MemberProfile
+from ikwen.billing.models import MoMoTransaction
 from ikwen.billing.mtnmomo.views import MTN_MOMO
 
 from echo.utils import count_pages
@@ -27,6 +33,11 @@ from zovizo.admin import BundleAdmin
 from zovizo.models import MEMBERSHIP, Project, Bundle, Subscription, Wallet, Draw, DrawSubscription, Subscriber, \
     EarningsWallet, CashOut
 from zovizo.utils import pick_up_winner, register_members_for_next_draw
+
+from daraja.models import Dara, Follower
+from daraja.utils import send_dara_notification_email
+
+logger = logging.getLogger('ikwen')
 
 SUBSCRIPTION_FEES = getattr(settings, 'SUBSCRIPTION_FEES', 100)
 COMPANY_SHARE = getattr(settings, 'COMPANY_SHARE', 25)
@@ -217,67 +228,169 @@ def set_bundle_payment_checkout(request, *args, **kwargs):
     amount = bundle.amount
     number = Subscription.objects.all().count() + 1
     obj = Subscription.objects.create(member=member, bundle=bundle, amount=amount, number=number)
-    request.session['amount'] = amount
-    request.session['model_name'] = 'zovizo.Subscription'
-    request.session['object_id'] = obj.id
-
+    signature = ''.join([random.SystemRandom().choice(string.ascii_letters + string.digits) for i in range(16)])
+    model_name = 'zovizo.Subscription'
     mean = request.GET.get('mean', MTN_MOMO)
-    request.session['mean'] = mean
-    request.session['notif_url'] = service.url  # Orange Money only
-    request.session['cancel_url'] = service.url + reverse('zovizo:profile') # Orange Money only
-    request.session['return_url'] = service.url + reverse('zovizo:profile')
+    tx = MoMoTransaction.objects.using(WALLETS_DB_ALIAS)\
+        .create(service_id=service.id, type=MoMoTransaction.CASH_OUT, amount=amount, phone='N/A', model=model_name,
+                object_id=obj.id, task_id=signature, wallet=mean, username=request.user.username, is_running=True)
+    notification_url = reverse('zovizo:confirm_bundle_payment', args=(tx.id, signature))
+    cancel_url = reverse('zovizo:profile')
+    return_url = reverse('zovizo:profile')
+    if getattr(settings, 'UNIT_TESTING', False):
+        return HttpResponse(json.dumps({'notification_url': notification_url}), content_type='text/json')
+    gateway_url = getattr(settings, 'IKWEN_PAYMENT_GATEWAY_URL', 'https://payment.ikwen.com/v1')
+    endpoint = gateway_url + '/request_payment'
+    params = {
+        'username': getattr(settings, 'IKWEN_PAYMENT_GATEWAY_USERNAME', service.project_name_slug),
+        'amount': amount,
+        'merchant_name': service.config.company_name,
+        'notification_url': service.url + notification_url,
+        'return_url': service.url + return_url,
+        'cancel_url': service.url + cancel_url,
+        'user_id': request.user.username
+    }
+    try:
+        r = requests.get(endpoint, params)
+        resp = r.json()
+        token = resp.get('token')
+        if token:
+            next_url = gateway_url + '/checkoutnow/' + resp['token'] + '?mean=' + mean
+        else:
+            logger.error("%s - Init payment flow failed with URL %s and message %s" % (service.project_name, r.url, resp['errors']))
+            messages.error(request, resp['errors'])
+            next_url = cancel_url
+    except:
+        logger.error("%s - Init payment flow failed with URL." % service.project_name, exc_info=True)
+        next_url = cancel_url
+    return HttpResponseRedirect(next_url)
 
 
 def confirm_bundle_payment(request, *args, **kwargs):
-    """
-    This function has no URL associated with it.
-    It serves as ikwen setting "MOMO_AFTER_CHECKOUT"
-    """
-    member = request.user
+    status = request.GET['status']
+    message = request.GET['message']
+    operator_tx_id = request.GET['operator_tx_id']
+    phone = request.GET['phone']
+    tx_id = kwargs['tx_id']
+    try:
+        tx = MoMoTransaction.objects.using(WALLETS_DB_ALIAS).get(pk=tx_id)
+        if not getattr(settings, 'DEBUG', False):
+            tx_timeout = getattr(settings, 'IKWEN_PAYMENT_GATEWAY_TIMEOUT', 15) * 60
+            expiry = tx.created_on + timedelta(seconds=tx_timeout)
+            if datetime.now() > expiry:
+                return HttpResponse("Transaction %s timed out." % tx_id)
+
+        tx.status = status
+        tx.message = 'OK' if status == MoMoTransaction.SUCCESS else message
+        tx.processor_tx_id = operator_tx_id
+        tx.phone = phone
+        tx.is_running = False
+        tx.save()
+    except:
+        raise Http404("Transaction %s not found" % tx_id)
+    if status != MoMoTransaction.SUCCESS:
+        return HttpResponse("Notification for transaction %s received with status %s" % (tx_id, status))
+
+    object_id = tx.object_id
+    signature = tx.task_id
+
+    callback_signature = kwargs.get('signature')
+    no_check_signature = request.GET.get('ncs')
+    if getattr(settings, 'DEBUG', False):
+        if not no_check_signature:
+            if callback_signature != signature:
+                return HttpResponse('Invalid transaction signature')
+    else:
+        if callback_signature != signature:
+            return HttpResponse('Invalid transaction signature')
+
+    mean = tx.wallet
     service = get_service_instance(check_cache=False)
-    service.raise_balance(request.session['amount'], provider=request.session['mean'])
-    object_id = request.session['object_id']
-    obj = Subscription.objects.get(pk=object_id, status=PENDING)
+    obj = Subscription.objects.select_related('member').get(pk=object_id, status=PENDING)
     obj.status = CONFIRMED
     obj.save()
     set_counters(service)
-    increment_history_field(service, 'turnover_history', obj.amount)
-    increment_history_field(service, 'earnings_history', obj.amount)
-    increment_history_field(service, 'transaction_earnings_history', obj.amount)
+    increment_history_field(service, 'turnover_history', tx.amount)
+    increment_history_field(service, 'earnings_history', tx.amount)
+    increment_history_field(service, 'transaction_earnings_history', tx.amount)
     increment_history_field(service, 'transaction_count_history')
-    wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=member.id)
-    wallet.balance += obj.amount
+    wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=obj.member.id)
+    wallet.balance += tx.amount
     wallet.save()
     now = datetime.now()
-    subscriber, update = Subscriber.objects.get_or_create(member=member)
+    subscriber, update = Subscriber.objects.get_or_create(member=obj.member)
     set_counters(subscriber)
     subscriber.last_payment_on = now
     increment_history_field(subscriber, 'subscriptions_count_history')
-    increment_history_field(subscriber, 'turnover_history', obj.amount)
-    increment_history_field(subscriber, 'earnings_history', obj.amount)
+    increment_history_field(subscriber, 'turnover_history', tx.amount)
+    increment_history_field(subscriber, 'earnings_history', tx.amount)
+    member = obj.member
 
-    # member = request.user
-    # add_event(service, PAYMENT_CONFIRMATION, member=member, object_id=object_id)
-    # partner = s.retailer
-    # if partner:
-    #     add_database_to_settings(partner.database)
-    #     sudo_group = Group.objects.using(partner.database).get(name=SUDO)
-    # else:
-    #     sudo_group = Group.objects.using(UMBRELLA).get(name=SUDO)
-    # add_event(service, PAYMENT_CONFIRMATION, group_id=sudo_group.id, object_id=invoice.id)
-    # if member.email:
-    #     invoice_url = 'http://ikwen.com' + reverse('billing:invoice_detail', args=(invoice.id,))
-    #     subject, message, sms_text = get_payment_confirmation_message(payment, member)
-    #     html_content = get_mail_content(subject, message, template_name='billing/mails/notice.html',
-    #                                     extra_context={'member_name': member.first_name, 'invoice': invoice,
-    #                                                    'cta': _("View invoice"), 'invoice_url': invoice_url})
-    #     sender = '%s <no-reply@%s>' % (config.company_name, service.domain)
-    #     msg = EmailMessage(subject, html_content, sender, [member.email])
-    #     msg.content_subtype = "html"
-    #     Thread(target=lambda m: m.send(), args=(msg,)).start()
-    notice = _("Your subscription was successful.")
-    messages.success(request, notice)
-    return HttpResponseRedirect(request.session['return_url'])
+    try:
+        follower = Follower.objects.get(member=member)
+    except Follower.DoesNotExist:
+        service.raise_balance(tx.amount, provider=mean)
+        return HttpResponse("Notification received")
+
+    referrer = follower.referrer
+    platform_earnings = tx.amount
+    dara, dara_service_original, provider_mirror = None, None, None
+    if referrer:
+        referrer_db = referrer.database
+        add_database(referrer_db)
+        try:
+            dara = Dara.objects.get(member=referrer.member)
+        except Dara.DoesNotExist:
+            logging.error("%s - Dara %s not found" % (service.project_name, member.username))
+        try:
+            dara_service_original = Service.objects.using(referrer_db).get(pk=referrer.id)
+        except Dara.DoesNotExist:
+            logging.error("%s - Dara service not found in %s database for %s" % (service.project_name, referrer_db, referrer.project_name))
+        try:
+            provider_mirror = Service.objects.using(referrer_db).get(pk=service.id)
+        except Service.DoesNotExist:
+            logging.error("%s - Provider Service not found in %s database for %s" % (service.project_name, referrer_db, referrer.project_name))
+
+        if dara:
+            referrer_earnings = tx.amount * dara.share_rate / 100
+            dara_service_original.raise_balance(referrer_earnings, provider=mean)
+            send_dara_notification_email(dara_service_original, tx.amount, referrer_earnings, tx.updated_on)
+
+            set_counters(dara)
+            dara.last_transaction_on = datetime.now()
+
+            increment_history_field(dara, 'orders_count_history')
+            increment_history_field(dara, 'turnover_history', tx.amount)
+            increment_history_field(dara, 'earnings_history', tx.amount)
+
+            if dara_service_original:
+                set_counters(dara_service_original)
+                increment_history_field(dara_service_original, 'transaction_count_history')
+                increment_history_field(dara_service_original, 'turnover_history', tx.amount)
+                increment_history_field(dara_service_original, 'earnings_history', referrer_earnings)
+
+            if dara_service_original:
+                set_counters(provider_mirror)
+                increment_history_field(provider_mirror, 'transaction_count_history')
+                increment_history_field(provider_mirror, 'turnover_history', tx.amount)
+                increment_history_field(provider_mirror, 'earnings_history', referrer_earnings)
+
+            platform_earnings = tx.amount - referrer_earnings
+
+            try:
+                member_ref = Member.objects.using(referrer_db).get(pk=member.id)
+            except Member.DoesNotExist:
+                member.save(using=referrer_db)
+                member_ref = Member.objects.using(referrer_db).get(pk=member.id)
+            follower_ref, update = Follower.objects.using(referrer_db).get_or_create(member=member_ref)
+            set_counters(follower_ref)
+            follower_ref.last_payment_on = datetime.now()
+            increment_history_field(follower_ref, 'orders_count_history')
+            increment_history_field(follower_ref, 'turnover_history', tx.amount)
+            increment_history_field(follower_ref, 'earnings_history', platform_earnings)
+
+    service.raise_balance(platform_earnings, provider=mean)
+    return HttpResponse("Notification received")
 
 
 class Dashboard(DashboardBase):

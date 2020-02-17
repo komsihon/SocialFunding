@@ -1,6 +1,5 @@
 from datetime import datetime
 import random as random_module
-from random import random
 
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -12,8 +11,8 @@ from ikwen.core.utils import get_mail_content, get_service_instance
 from zovizo.models import Wallet, Draw, DrawSubscription, EarningsWallet
 
 SUBSCRIPTION_FEES = getattr(settings, 'SUBSCRIPTION_FEES', 100)
-WINNER_SHARE = getattr(settings, 'WINNER_SHARE', 75)
-COMPANY_SHARE = getattr(settings, 'COMPANY_SHARE', 25)
+WINNER_SHARE = getattr(settings, 'WINNER_SHARE', 60)
+COMPANY_SHARE = getattr(settings, 'COMPANY_SHARE', 40)
 
 
 def register_members_for_next_draw(debug=False):
