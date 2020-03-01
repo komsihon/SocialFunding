@@ -23,53 +23,53 @@
             </h3>
             <form id="auth" action="{{ action }}" method="post">{% csrf_token %}
                 <div class="form-group row username">
-                    <label for="username" class="col-sm-5 col-md-4">{% trans "Username or email" %}</label>
+                    <label for="username" class="col-sm-5 col-md-4">{% trans "Email or phone" %}</label>
                     <div class="col-sm-7 col-md-8">
-                        <input id="username" class="form-control input-sm" type="text" name="username" value="{{ username }}" autofocus />
+                        <input id="username" class="form-control input-md" type="text" name="username" value="{{ username }}" autofocus />
                     </div>
                 </div>
                 <div class="form-group submit-username">
                     {% if settings.IS_UMBRELLA %}
-                        <button class="btn btn-primary btn-block btn-sm" type="button"> {% trans "Submit" %} </button>
+                        <button class="btn btn-primary btn-block btn-md" type="button">
+                            {% include 'core/snippets/button_spinner.html' %}
+                            <span>{% trans "Submit" %}</span>
+                        </button>
                     {% else %}
-                        <button class="btn btn-primary btn-block btn-sm login-with-ikwen" type="button">
+                        <button class="btn btn-primary btn-block btn-md login-with-ikwen" type="button">
                             <img height="26" src="{% static 'ikwen/img/logo_ikwen_symbol_30x30.png' %}" />
                             {% blocktrans %}Login with <strong>ikwen</strong>{% endblocktrans %}
                         </button>
                     {% endif %}
-                    <div class="spinner">
-                        <i class="fa fa-circle-o-notch fa-spin fa-2x"></i>
-                    </div>
                 </div>
                 <div class="create-account">
                     <div class="form-group row password2">
                         <label for="password2" class="col-sm-5 col-md-4">{% trans "Confirm password" %}</label>
                         <div class="col-sm-7 col-md-8">
-                            <input id="password2" class="form-control input-sm confirm-password" type="password" name="password2" />
+                            <input id="password2" class="form-control input-md confirm-password" type="password" name="password2" />
                         </div>
                     </div>
                     <div class="form-group row email">
                         <label for="email" class="col-sm-5 col-md-4">{% trans "E-mail" %}</label>
                         <div class="col-sm-7 col-md-8">
-                            <input id="email" class="form-control input-sm required" type="email" name="email"/>
+                            <input id="email" class="form-control input-md required" type="email" name="email"/>
                         </div>
                     </div>
                     <div class="form-group row phone">
                         <label for="phone" class="col-sm-5 col-md-4">{% trans "Phone number" %}</label>
                         <div class="col-sm-7 col-md-8">
-                            <input id="phone" class="form-control input-sm required" type="text" name="phone"/>
+                            <input id="phone" class="form-control input-md required" type="text" name="phone"/>
                         </div>
                     </div>
                     <div class="form-group row first-name">
                         <label for="first-name" class="col-sm-5 col-md-4">{% trans "First name" %}</label>
                         <div class="col-sm-7 col-md-8">
-                            <input id="first-name" class="form-control input-sm" type="text" name="first_name"/>
+                            <input id="first-name" class="form-control input-md" type="text" name="first_name"/>
                         </div>
                     </div>
                     <div class="form-group row last-name">
                         <label for="last-name" class="col-sm-5 col-md-4">{% trans "Last name" %}</label>
                         <div class="col-sm-7 col-md-8">
-                            <input id="last-name" class="form-control input-sm" type="text" name="last_name"/>
+                            <input id="last-name" class="form-control input-md" type="text" name="last_name"/>
                         </div>
                     </div>
                     <div class="form-group row gender">
@@ -92,7 +92,7 @@
                 <div class="form-group row password">
                     <label for="password" class="col-sm-5 col-md-4">{% trans "Password" %}</label>
                     <div class="col-sm-7 col-md-8">
-                        <input id="password" class="form-control input-sm" type="password" name="password" />
+                        <input id="password" class="form-control input-md" type="password" name="password" />
                     </div>
                 </div>
                 <div class="terms">
@@ -123,9 +123,12 @@
                     </div>
                 </div>
                 <div class="form-group submit">
-                    <button id="cancel" class="btn btn-default btn-sm hidden-xs" type="button"> {% trans "Back" %} </button>
-                    <button id="continue" class="btn btn-primary btn-block btn-sm continue" type="button"> {% trans "Continue" %} </button>
-                    <button id="submit" class="btn btn-success btn-block btn-sm cta" type="submit"> {% trans "Submit" %} </button>
+                    <button id="cancel" class="btn btn-default btn-md hidden-xs" type="button"> {% trans "Back" %} </button>
+                    <button id="continue" class="btn btn-primary btn-block btn-md continue" type="button"> {% trans "Continue" %} </button>
+                    <button id="submit" class="btn btn-success btn-block btn-md cta" type="submit">
+                        {% include 'core/snippets/button_spinner.html' %}
+                        <span>{% trans "Submit" %}</span>
+                    </button>
                     {% url 'ikwen:forgotten_password' as forgotten_password_url %}
                     <a class="forgotten-pwd" href="{{ forgotten_password_url|ikwenize }}">{% trans "Forgotten password ?" %}</a>
                     <div class="clearfix"></div>
@@ -140,7 +143,7 @@
     <script type="text/javascript">
         {% get_current_language as LANGUAGE_CODE %}
         (function() {
-            var pwdMinLength = 4; //Length for auto-generated password
+            let pwdMinLength = 4; //Length for auto-generated password
             $(window).on('hashchange', function() {
                 if (location.hash.length < 1) {
                     $('.form-group.password').insertBefore('.terms').find('label').text("{% trans "Password" %}");
@@ -157,7 +160,7 @@
                 window.history.back();
             }).on('click', '#continue', function() {
                 $('.errorlist').remove();
-                var goToNext = true;
+                let goToNext = true;
                 if (!testUsername()) goToNext = false;
                 if (!testPassword()) goToNext = false;
                 if ($('#email').hasClass('required')) {
@@ -174,19 +177,25 @@
                 if ($(this).prop('checked')) {
                     $('#submit').removeProp('disabled').removeClass('default')
                 } else $('#submit').prop('disabled', true).addClass('default')
-            }).on('click', '#submit', function() {
+            }).on('click', '#submit:not(.processing)', function() {
                 if ($('#content').hasClass('register step2')) {
+                    if ($(this).hasClass('processing')) return false;
                     $('.errorlist').remove();
                     {% if settings.REGISTER_WITH_DOB %}
                         if (!checkDOB()) return false;
                     {% endif %}
                     if (!$('#accept-terms').prop('checked')) return false;
                 }
+                $(this).addClass('processing');
             }).on('keydown', '#auth input, #auth select', function(e) {
                 // This Manages what happens when we press enter in the form
                 // returning false on $(form).submit() does not prevent the
                 // form from being submitted, so we use this hack instead.
                 if (e.keyCode === 13) {
+                    if ($('#submit').hasClass('processing')) {
+                        e.preventDefault();
+                        return;
+                    }
                     $('.errorlist').remove();
                     if ($('#content').hasClass('init')) {
                         e.preventDefault();
@@ -203,11 +212,12 @@
                         {% endif %}
                         if (!$('#accept-terms').prop('checked')) e.preventDefault();
                     }
+                    if ($('#submit').hasClass('processing')) e.preventDefault();
                 }
             });
             $('#username').keyup(function(e) {
                 if (e.key === ' ') {
-                    var username = $(this).val().trim().toLowerCase();
+                    let username = $(this).val().trim().toLowerCase();
                     $(this).val(username);
                 }
             }).blur(function() {testUsername()});
@@ -215,28 +225,22 @@
             $('#phone').blur(testPhone);
             function testUsername(uname) {
                 $('.errorlist.username').remove();
-                var $username = $('#username'),
+                let $username = $('#username'),
                     username = $username.val();
                 username = username.replace(/ /g, '').toLowerCase();
                 $username.val(username);
                 if (uname) username = uname;
-                if (username.indexOf('@') > 0) {
-                    if (username.isValidEmail()) return true;
-                    $('<ul class="errorlist username"><li>' + "{% trans "Please, enter valid email" %}" + '</li></ul>')
-                            .insertAfter('#username');
-                    return false
-                }
-                if (username.length >= 3 && /[a-z]{1}/.test(username.substr(0, 1))) return true;
-                $('<ul class="errorlist username">' +
-                    '<li>' + "{% trans "Please use at least 3 characters." %}" + '</li>' +
-                    '<li>' + "{% trans "Start with a letter." %}" + '</li>' +
-                    '</ul>').insertAfter('#username');
+                if (username.isValidEmail()) return true;
+                if (username.substr(0, 2) === '00') username = username.substr(2);
+                if (/\d{9,}/.test(username)) return true;
+                $('<ul class="errorlist username"><li>' + "{% trans "Please, enter valid email or phone" %}" + '</li></ul>')
+                        .insertAfter('#username');
                 $username.focus();
                 return false;
             }
             function testEmail() {
                 $('.errorlist.email').remove();
-                var $email = $('#email'),
+                let $email = $('#email'),
                     email = $email.val().replace(/ /g, '').toLowerCase();
                 $email.val(email);
                 if (email.isValidEmail()) return true;
@@ -247,7 +251,7 @@
             }
             function testPhone() {
                 $('.errorlist.phone').remove();
-                var $phone = $('#phone'),
+                let $phone = $('#phone'),
                     phone = $phone.val().replace(/ /g, '');
                 $phone.val(phone);
                 if (phone && phone.substr(0, 2) !== '00' && /\d{9,}/.test(phone)) return true;
@@ -261,7 +265,7 @@
             }
             function testPassword() {
                 $('.errorlist.password, .errorlist.password2').remove();
-                var $pwd1 = $('#password'),
+                let $pwd1 = $('#password'),
                     pwd1 = $pwd1.val(),
                     pwd2 = $('#password2').val();
                 if (pwd1.length < pwdMinLength) {
@@ -282,19 +286,21 @@
             }
 
             function checkUsername() {
-                var username = $('#username').val().toLowerCase();
+                let username = $('#username').val().toLowerCase(),
+                    _$btn = $('.submit-username .btn');
                 if (!username) return false;
                 if (!testUsername(username)) return false;
-                $('#auth .spinner').css('visibility', 'visible');
+                if (_$btn.hasClass('processing')) return false;
+                _$btn.addClass('processing');
                 $.ajax({
                     url: '{% url 'ikwen:sign_in' %}',
                     data: {username: username},
                     error: function(req, status, error) {
-                        $('#auth .spinner').css('visibility', 'hidden');
+                        _$btn.removeClass('processing');
                         $('#content .failure').show().html("{% trans "Oops! An error occurred. Check your internet." %}");
                     },
                     success: function(data) {
-                        $('#auth .spinner').css('visibility', 'hidden');
+                        _$btn.removeClass('processing');
                         $('#content').removeClass('init');
                         if (data.existing) {
                             location.hash = 'login';
@@ -321,7 +327,7 @@
             }
             function checkDOB() {
                 $('.errorlist.dob').remove();
-                var day = parseInt($('#day').val()),
+                let day = parseInt($('#day').val()),
                     month = parseInt($('#month').val()),
                     year = parseInt($('#year').val()),
                     d = new Date(year + '/' + month + '/' + day);

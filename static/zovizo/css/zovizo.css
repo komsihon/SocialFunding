@@ -7,7 +7,7 @@
 */
 
 .stage {margin: auto}
-.bundle {border-bottom: 3px solid #66bf39;border-radius: 4px;height: 195px;margin-bottom: 30px;}
+.bundle {border-bottom: 3px solid #337ab7;border-radius: 4px;height: 195px;margin-bottom: 60px;}
 .bundle .currency {font-size: 0.6em;font-weight: 300;color: #888;}
 .section-title {font-weight: 300;margin-bottom: 30px;text-align: center;}
 .subscription-fees {}
@@ -23,19 +23,26 @@
 .picto {height: 50px}
 .bundle .btn {margin-top: 60px;}
 .bundle > div {padding-left: 0}
-.bundle .cost {font-size: 36px;font-weight: 600;margin-top: 30px;color: #444;line-height: 22px;}
+.bundle .cost {font-size: 30px;font-weight: 600;margin-top: 30px;color: #444;line-height: 22px;}
 .h-section h2 {font-size: 50px;font-weight: 700;margin: 5vh 0 10vh;text-align: center;}
 .section.project {background: #eef6ff; min-height: 450px; padding-bottom: 40px}
 .section.project .edit {display: none}
 .btn {height: 45px}
-.btn-success {color: #fff;background-color: #66bf39;border-color: #66bf39;}
+.btn-success {color: #fff;background-color: #337ab7;border-color: #337ab7;}
+
+.payment-method {display: block;cursor: pointer;margin-bottom: 1em;}
+.payment-method .logo {display: block; text-align: center}
+.om-instructions {display: none; margin-top: 10px;}
+.modal-backdrop {background: #fff}
+.modal-backdrop.in {opacity: .7; filter: Alpha(opacity=70)}
+
 @media (max-width: 767px) {
     .h-section h2 {font-size: 33px;margin-bottom: 6vh}
-    .section.cash .d-box, .section.bundles .d-box {margin-bottom: 20px}
+    .section.cash .d-box, .section.bundles .d-box {margin-bottom: 40px;}
     .home-bundle-list .col-xs-4 {padding-left: 4px;padding-right: 4px;}
     .bundle {font-size: 21px;min-height: 190px;}
-    .bundle .btn {margin-top: 40px}
-    .bundle .cost {font-size: 21px;}
+    .bundle .btn {/* margin-top: 40px */}
+    .bundle .cost {font-size: 36px;}
     .d-box {padding: 10px 5px 20px;}
     .d-box-title {font-size: 18px;}
 }
