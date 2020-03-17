@@ -67,10 +67,10 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                             <div class="container-fluid">
                                 <ul class="nav navbar-nav navbar-right">
                                     <li>
-                                        <a href="{% url 'home' %}">{% trans "Accueil" %}</a>
+                                        <a href="{% url 'home' %}">{% trans "Home" %}</a>
                                     </li>
                                     <li>
-                                        <a href="{% url 'about' %}">{% trans "À propos" %}</a>
+                                        <a href="{% url 'about' %}">{% trans "About us" %}</a>
                                     </li>
 {#                                    <li>#}
 {#                                        <a href="#">{% trans "News" %}</a>#}
@@ -87,7 +87,7 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                                                 <li style="padding: 9px 20px 3px; font-size: 18px"> {{ user.get_short_name }} </li>
                                                 <li role="separator" class="divider"></li>
                                                 <li>
-                                                    <a href="{% url 'zovizo:profile' %}">{% trans "Mon Zovizo" %}</a>
+                                                    <a href="{% url 'zovizo:profile' %}">{% trans "My Zovizo" %}</a>
                                                 </li>
                                                 <li>
                                                     <a href="{{ account_setup_url|ikwenize }}">{% trans "Account setup" %}</a>
@@ -97,7 +97,7 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                                         </li>
                                     {% else %}
                                         <li>
-                                            <a href="{% url 'ikwen:do_sign_in' %}">{% trans "Connexion" %}</a>
+                                            <a href="{% url 'ikwen:do_sign_in' %}">{% trans "Login" %}</a>
                                         </li>
                                     {% endif %}
                                 </ul>
