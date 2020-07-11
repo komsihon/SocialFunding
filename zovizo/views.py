@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import random
 
 import requests
+from currencies.models import Currency
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.humanize.templatetags.humanize import intcomma
@@ -32,7 +33,7 @@ from echo.models import Balance
 from zovizo.admin import BundleAdmin
 from zovizo.models import MEMBERSHIP, Project, Bundle, Subscription, Wallet, Draw, DrawSubscription, Subscriber, \
     EarningsWallet, CashOut
-from zovizo.utils import pick_up_winner, register_members_for_next_draw
+from zovizo.utils import pick_up_winner, register_members_for_next_draw, detect_and_set_currency_by_ip
 
 from daraja.models import Dara, Follower
 from daraja.utils import send_dara_notification_email
@@ -48,6 +49,7 @@ class Home(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(Home, self).get_context_data(**kwargs)
+        currency = detect_and_set_currency_by_ip(self.request)
         now = datetime.now()
         draw = Draw.get_current()
         run_on = draw.run_on
@@ -70,7 +72,14 @@ class Home(TemplateView):
             rs = (remaining_time % 3600) % 60
             count_down = '%02d:%02d:%02d' % (rh, rm, rs)
         context['count_down'] = count_down
-        context['bundle_list'] = Bundle.objects.filter(show_on_home=True).order_by('amount')
+        context['bundle_list'] = Bundle.objects.filter(currency=currency, is_investor_pack=False,
+                                                       show_on_home=True).order_by('amount')
+        try:
+            context['investor_pack'] = Bundle.objects.filter(currency=currency, is_investor_pack=True)[0]
+        except:
+            pass
+        context['investor_pack_cost_xaf'] = 36500
+        context['fundraising_target'] = 300000
         return context
 
     def get(self, request, *args, **kwargs):
@@ -95,7 +104,8 @@ class Home(TemplateView):
             else:
                 response = {'winner': None}
             return HttpResponse(json.dumps(response))
-        return super(Home, self).get(self, request, *args, **kwargs)
+        response = super(Home, self).get(self, request, *args, **kwargs)
+        return response
 
 
 class About(TemplateView):
@@ -151,20 +161,25 @@ class Profile(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(Profile, self).get_context_data(**kwargs)
         member = self.request.user
-
+        currency = detect_and_set_currency_by_ip(self.request)
         draw = Draw.get_current()
         if datetime.now().hour < getattr(settings, 'DRAW_HOUR', 19):
             draw.participant_count = Wallet.objects.using('zovizo_wallets')\
                 .filter(balance__gte=SUBSCRIPTION_FEES).count()
             draw.jackpot = draw.participant_count * SUBSCRIPTION_FEES
         draw.winner_jackpot = draw.jackpot * (1 - COMPANY_SHARE/100)
-        context['bundle_list'] = Bundle.objects.filter(is_active=True).order_by('amount')
+        context['bundle_list'] = Bundle.objects.filter(is_active=True, is_investor_pack=False, currency=currency).order_by('amount')
+        context['investor_bundle_list'] = Bundle.objects.filter(is_active=True, is_investor_pack=True, currency=currency).order_by('amount')
         wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=member.id)
         context['wallet'] = wallet
+        if wallet.currency_code:
+            context['currency'] = wallet.currency
+        else:
+            context['currency'] = currency
         ewallet, update = EarningsWallet.objects.using('zovizo_wallets').get_or_create(member_id=member.id)
         context['earnings_wallet'] = ewallet
         context['draw'] = draw
-        if wallet.balance > SUBSCRIPTION_FEES:
+        if wallet.xaf_balance > SUBSCRIPTION_FEES:
             try:
                 sub = Subscription.objects.filter(member=member, status=CONFIRMED).order_by('-id')[0]
             except IndexError:
@@ -225,9 +240,12 @@ def set_bundle_payment_checkout(request, *args, **kwargs):
     service = get_service_instance()
     bundle_id = request.POST['product_id']
     bundle = Bundle.objects.get(pk=bundle_id)
-    amount = bundle.amount
+    qty = 1
+    if bundle.is_investor_pack:
+        qty = int(request.POST.get('quantity', 1))
+    amount = bundle.amount * qty
     number = Subscription.objects.all().count() + 1
-    obj = Subscription.objects.create(member=member, bundle=bundle, amount=amount, number=number)
+    obj = Subscription.objects.create(member=member, bundle=bundle, amount=amount, number=number, quantity=qty)
     signature = ''.join([random.SystemRandom().choice(string.ascii_letters + string.digits) for i in range(16)])
     model_name = 'zovizo.Subscription'
     mean = request.GET.get('mean', MTN_MOMO)
@@ -267,32 +285,46 @@ def set_bundle_payment_checkout(request, *args, **kwargs):
 
 
 def confirm_bundle_payment(request, *args, **kwargs):
-    status = request.GET['status']
-    message = request.GET['message']
-    operator_tx_id = request.GET['operator_tx_id']
-    phone = request.GET['phone']
-    tx_id = kwargs['tx_id']
-    try:
-        tx = MoMoTransaction.objects.using(WALLETS_DB_ALIAS).get(pk=tx_id)
-        if not getattr(settings, 'DEBUG', False):
-            tx_timeout = getattr(settings, 'IKWEN_PAYMENT_GATEWAY_TIMEOUT', 15) * 60
-            expiry = tx.created_on + timedelta(seconds=tx_timeout)
-            if datetime.now() > expiry:
-                return HttpResponse("Transaction %s timed out." % tx_id)
+    service = get_service_instance(check_cache=False)
+    ikwen_share_rate = getattr(settings, 'IKWEN_SHARE_RATE', 3)
+    sub = kwargs.pop('subscription')
+    if sub:
+        signature = request.session['signature']
+        mean = 'paypal'
+        tx = MoMoTransaction.objects.using(WALLETS_DB_ALIAS)\
+            .create(service_id=service.id, type=MoMoTransaction.CASH_IN, phone=request.user.phone, amount=sub.amount,
+                    model='zovizo.Subscription', object_id=sub.id, wallet=mean, username=request.user.username,
+                    is_running=False, message='OK', status=MoMoTransaction.SUCCESS)
+    else:
+        status = request.GET['status']
+        message = request.GET['message']
+        operator_tx_id = request.GET['operator_tx_id']
+        phone = request.GET['phone']
+        tx_id = kwargs['tx_id']
+        try:
+            tx = MoMoTransaction.objects.using(WALLETS_DB_ALIAS).get(pk=tx_id)
+            if not getattr(settings, 'DEBUG', False):
+                tx_timeout = getattr(settings, 'IKWEN_PAYMENT_GATEWAY_TIMEOUT', 15) * 60
+                expiry = tx.created_on + timedelta(seconds=tx_timeout)
+                if datetime.now() > expiry:
+                    return HttpResponse("Transaction %s timed out." % tx_id)
 
-        tx.status = status
-        tx.message = 'OK' if status == MoMoTransaction.SUCCESS else message
-        tx.processor_tx_id = operator_tx_id
-        tx.phone = phone
-        tx.is_running = False
-        tx.save()
-    except:
-        raise Http404("Transaction %s not found" % tx_id)
-    if status != MoMoTransaction.SUCCESS:
-        return HttpResponse("Notification for transaction %s received with status %s" % (tx_id, status))
+            tx.status = status
+            tx.message = 'OK' if status == MoMoTransaction.SUCCESS else message
+            tx.processor_tx_id = operator_tx_id
+            tx.phone = phone
+            tx.is_running = False
+            tx.fees = tx.amount * ikwen_share_rate / 100
+            tx.save()
+        except:
+            raise Http404("Transaction %s not found" % tx_id)
+        if status != MoMoTransaction.SUCCESS:
+            return HttpResponse("Notification for transaction %s received with status %s" % (tx_id, status))
 
-    object_id = tx.object_id
-    signature = tx.task_id
+        object_id = tx.object_id
+        signature = tx.task_id
+        mean = tx.wallet
+        sub = Subscription.objects.select_related('member').get(pk=object_id, status=PENDING)
 
     callback_signature = kwargs.get('signature')
     no_check_signature = request.GET.get('ncs')
@@ -304,36 +336,14 @@ def confirm_bundle_payment(request, *args, **kwargs):
         if callback_signature != signature:
             return HttpResponse('Invalid transaction signature')
 
-    mean = tx.wallet
-    service = get_service_instance(check_cache=False)
-    obj = Subscription.objects.select_related('member').get(pk=object_id, status=PENDING)
-    obj.status = CONFIRMED
-    obj.save()
-    set_counters(service)
-    increment_history_field(service, 'turnover_history', tx.amount)
-    increment_history_field(service, 'earnings_history', tx.amount)
-    increment_history_field(service, 'transaction_earnings_history', tx.amount)
-    increment_history_field(service, 'transaction_count_history')
-    wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=obj.member.id)
-    wallet.balance += tx.amount
-    wallet.save()
-    now = datetime.now()
-    subscriber, update = Subscriber.objects.get_or_create(member=obj.member)
-    set_counters(subscriber)
-    subscriber.last_payment_on = now
-    increment_history_field(subscriber, 'subscriptions_count_history')
-    increment_history_field(subscriber, 'turnover_history', tx.amount)
-    increment_history_field(subscriber, 'earnings_history', tx.amount)
-    member = obj.member
-
+    member = sub.member
     try:
         follower = Follower.objects.get(member=member)
+        referrer = follower.referrer
     except Follower.DoesNotExist:
-        service.raise_balance(tx.amount, provider=mean)
-        return HttpResponse("Notification received")
+        referrer = None
 
-    referrer = follower.referrer
-    platform_earnings = tx.amount
+    platform_earnings = sub.amount
     dara, dara_service_original, provider_mirror = None, None, None
     if referrer:
         referrer_db = referrer.database
@@ -352,30 +362,31 @@ def confirm_bundle_payment(request, *args, **kwargs):
             logging.error("%s - Provider Service not found in %s database for %s" % (service.project_name, referrer_db, referrer.project_name))
 
         if dara:
-            referrer_earnings = tx.amount * dara.share_rate / 100
+            referrer_earnings = sub.amount * dara.share_rate / 100
+            platform_earnings = sub.amount - referrer_earnings
             dara_service_original.raise_balance(referrer_earnings, provider=mean)
-            send_dara_notification_email(dara_service_original, tx.amount, referrer_earnings, tx.updated_on)
+            tx.dara_fees = referrer_earnings
+            tx.save(using=WALLETS_DB_ALIAS)
+            send_dara_notification_email(dara_service_original, sub.amount, referrer_earnings, sub.updated_on)
 
             set_counters(dara)
             dara.last_transaction_on = datetime.now()
 
             increment_history_field(dara, 'orders_count_history')
-            increment_history_field(dara, 'turnover_history', tx.amount)
-            increment_history_field(dara, 'earnings_history', tx.amount)
+            increment_history_field(dara, 'turnover_history', sub.amount)
+            increment_history_field(dara, 'earnings_history', platform_earnings)
 
             if dara_service_original:
                 set_counters(dara_service_original)
                 increment_history_field(dara_service_original, 'transaction_count_history')
-                increment_history_field(dara_service_original, 'turnover_history', tx.amount)
+                increment_history_field(dara_service_original, 'turnover_history', sub.amount)
                 increment_history_field(dara_service_original, 'earnings_history', referrer_earnings)
 
             if dara_service_original:
                 set_counters(provider_mirror)
                 increment_history_field(provider_mirror, 'transaction_count_history')
-                increment_history_field(provider_mirror, 'turnover_history', tx.amount)
+                increment_history_field(provider_mirror, 'turnover_history', sub.amount)
                 increment_history_field(provider_mirror, 'earnings_history', referrer_earnings)
-
-            platform_earnings = tx.amount - referrer_earnings
 
             try:
                 member_ref = Member.objects.using(referrer_db).get(pk=member.id)
@@ -386,10 +397,38 @@ def confirm_bundle_payment(request, *args, **kwargs):
             set_counters(follower_ref)
             follower_ref.last_payment_on = datetime.now()
             increment_history_field(follower_ref, 'orders_count_history')
-            increment_history_field(follower_ref, 'turnover_history', tx.amount)
-            increment_history_field(follower_ref, 'earnings_history', platform_earnings)
+            increment_history_field(follower_ref, 'turnover_history', sub.amount)
+            increment_history_field(follower_ref, 'earnings_history', referrer_earnings)
+
+    sub.status = CONFIRMED
+    sub.save()
+    wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=member.id)
+    bundle = sub.bundle
+    currency = bundle.currency
+    wallet.currency_code = currency.code
+    wallet.xaf_balance += int(bundle.amount / currency.factor)
+    wallet.balance = round(int(wallet.xaf_balance) * currency.factor, 2)
+    wallet.save()
+    now = datetime.now()
+
+    # Dashboards stats
+    set_counters(service)
+    increment_history_field(service, 'turnover_history', sub.amount)
+    increment_history_field(service, 'earnings_history', platform_earnings)
+    increment_history_field(service, 'transaction_earnings_history', tx.amount)
+    increment_history_field(service, 'transaction_count_history')
+
+    subscriber, update = Subscriber.objects.get_or_create(member=member)
+    set_counters(subscriber)
+    subscriber.last_payment_on = now
+    increment_history_field(subscriber, 'subscriptions_count_history')
+    increment_history_field(subscriber, 'turnover_history', sub.amount)
+    increment_history_field(subscriber, 'earnings_history', platform_earnings)
 
     service.raise_balance(platform_earnings, provider=mean)
+    if kwargs.get('next_url'):
+        messages.success(request, _("Successful payment. You will take part in the next draw."))
+        return HttpResponseRedirect(kwargs.get('next_url'))
     return HttpResponse("Notification received")
 
 

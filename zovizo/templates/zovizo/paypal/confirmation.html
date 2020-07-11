@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+     <head>
+        <title>Redirecting ...</title>
+    </head>
+    <body onload="document.redirect.submit()">
+        <form method="post" id='redirect' name="redirect" action="{% url 'zovizo:paypal_do_checkout' %}">
+            {% csrf_token %}
+            <input type="hidden" name="subscription_id" value="{{ request.GET.subscription_id }}">
+        </form>
+    </body>
+</html>

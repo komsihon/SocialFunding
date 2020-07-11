@@ -10,10 +10,6 @@ from zovizo.views import Dashboard, Home, About, DrawView
 urlpatterns = patterns(
     '',
     url(r'^laakam/', include(admin.site.urls)),
-    url(r'^$', Home.as_view(), name='home'),
-    url(r'^about/$', About.as_view(), name='about'),
-    url(r'^draw/$', DrawView.as_view(), name='draw'),
-    url(r'^', include('zovizo.urls', namespace='zovizo')),
 
     url(r'^billing/', include('ikwen.billing.urls', namespace='billing')),
     url(r'^rewarding/', include('ikwen.rewarding.urls', namespace='rewarding')),
@@ -31,6 +27,11 @@ urlpatterns = patterns(
     url(r'^ikwen/theming/', include('ikwen.theming.urls', namespace='theming')),
     url(r'^ikwen/cashout/', include('ikwen.cashout.urls', namespace='cashout')),
     url(r'^ikwen/', include('ikwen.core.urls', namespace='ikwen')),
+
+    url(r'^about/$', About.as_view(), name='about'),
+    url(r'^draw/$', DrawView.as_view(), name='draw'),
+    url(r'^', include('zovizo.urls', namespace='zovizo')),
+    url(r'^$', Home.as_view(), name='home'),
 
     # url(r'^$', ProviderDashboard.as_view(), name='admin_home'),
     # url(r'^page/(?P<url>[-\w]+)/$', FlatPageView.as_view(), name='flatpage'),

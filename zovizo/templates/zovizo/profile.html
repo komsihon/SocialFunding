@@ -1,5 +1,5 @@
 {% extends "core/base_bs.html" %}
-{% load i18n humanize static auth_tokens admin_list %}
+{% load i18n humanize static auth_tokens admin_list currency %}
 
 {% block page_title %}
 <title> {% trans "Profile" %} - Zovizo </title>
@@ -7,7 +7,7 @@
 
 {% block head_style %}
     {{ block.super }}
-    <link href="{% static 'zovizo/css/zovizo.css' %}" media="screen" rel="stylesheet" type="text/css" />
+    <link href="{% static 'zovizo/css/zovizo.css' %}?v=20.7.11" media="screen" rel="stylesheet" type="text/css" />
 {% endblock %}
 
 {% block content %}
@@ -33,7 +33,7 @@
                 {% if earnings_wallet.balance > 0 %}
                     <div class="wallet subtle-shade" style="padding: 40px 0 10px; margin-bottom: 30px">
                         <div style="font-size: 18px">{% blocktrans with balance=earnings_wallet.balance %}
-                            You have XAF <strong>{{ balance }}</strong> in your WinJack.
+                            You have {{ currency_symbol }} <strong>{{ balance }}</strong> in your WinJack.
                         {% endblocktrans %}</div>
                         {% if user.phone_verified %}
                             <p class="text-muted" style="margin-top: 15px">{% blocktrans %}
@@ -59,7 +59,11 @@
                                 {% trans "Balance" %}
                             </h3>
                             <div>
-                                <div class="balance">{{ wallet.balance|intcomma }}</div>
+                                <div class="balance" style="color: #666">
+                                    <span class="currency">{{ currency.symbol }}</span>
+                                    <span class="amount">{{ wallet.balance|floatformat:currency.precision|intcomma }}</span>
+                                    <div class="clearfix"></div>
+                                </div>
 {#                                <div class="until">#}
 {#                                    <span>{% trans "Exp." %}</span>#}
 {#                                    <span class="text-muted">16 Sept. 2018</span>#}
@@ -77,7 +81,11 @@
                                 {% trans "Jackpot" %}
                             </h3>
                             <div>
-                                <div class="balance">{{ draw.winner_jackpot|intcomma }}</div>
+                                <div class="balance" style="font-weight: 600">
+                                    <span class="currency">{{ currency.symbol }}</span>
+                                    <span class="amount">{{ draw.winner_jackpot|currency:currency.code|floatformat:currency.precision|intcomma }}</span>
+                                    <div class="clearfix"></div>
+                                </div>
                                 <div class="until">
                                     <span>{% trans "Next draw" %}</span>
                                     <span class="text-muted">{{ draw.run_on|date }} - 19:00 UTC</span>
@@ -148,7 +156,7 @@
             </div>
             <div class="clearfix"></div>
         </div>
-        <section></section>
+        {% include 'zovizo/snippets/invest_promotion.html' %}
     </div>
     {% include 'billing/snippets/modal_payment_options.html' %}
 {% endblock %}

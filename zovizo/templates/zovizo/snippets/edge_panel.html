@@ -3,8 +3,6 @@
     <div id="side-nav" class="edge-panel-left" style="margin-left: -240px">
         <div class="wrapper">
             <div class="stage">
-
-{#                    {% if user.cover_image and user.cover_image.name %}#}
                 <div class="top-edge-panel" style>
                     {% if config.cover_image and config.cover_image.name %}
                         <div class="panel-top" style="background-image: url({{ settings.IKWEN_MEDIA_URL }}{{ config.cover_image.name }});">
@@ -19,7 +17,7 @@
                                             {% if config.logo.name %}
                                                 <div class="mob-logo-img" style="background-image: url({{ settings.IKWEN_MEDIA_URL }}{{ config.logo.name }})"></div>
                                             {% else %}
-                                                <div id="no-logo" class="no-logo subtle-shade">{{ service.project_name |make_list|first }}</div>
+                                                <div id="no-logo" class="no-logo subtle-shade">{{ service.project_name|make_list|first }}</div>
                                             {% endif %}
                                         </a>
                                     </h3>
@@ -34,24 +32,29 @@
                                 {% if config.contact_phone %}<div class="phone"><i class="fa fa-phone" aria-hidden="true"></i>{{ config.contact_phone }}</div>{% endif %}
                                 {% if config.contact_email %}<div class="email"><i class="fa fa-envelope" aria-hidden="true"></i>{{ config.contact_email }}</div>{% endif %}
                             </div>
+                            <div class="bottom-cntr">
+                                {% include 'core/snippets/language_switcher.html' %}
+                                {% include 'core/snippets/currency_switcher.html' %}
+                                <div class="clearfix"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="divider"></div>
                 <ul class="nav nav-pills nav-stacked">
                     <li>
-                        <a href="{% url 'home' %}">Accueil</a>
+                        <a href="{% url 'home' %}">{% trans "Home" %}</a>
                     </li>
                     <li>
-                        <a href="{% url 'about' %}">À propos</a>
+                        <a href="{% url 'about' %}">{% trans "About" %}</a>
                     </li>
                     {% if user.is_anonymous %}
                         <li>
-                            <a href="{% url 'ikwen:do_sign_in' %}">Connexion</a>
+                            <a href="{% url 'ikwen:do_sign_in' %}">{% trans "Login" %}</a>
                         </li>
                     {% else %}
                         <li>
-                            <a href="{% url 'ikwen:sign_in' %}">Mon Zovizo</a>
+                            <a href="{% url 'zovizo:profile' %}">{% trans "My Zovizo" %}</a>
                         </li>
                     {% endif %}
 {#                    {% if agreement_page %}#}
@@ -59,16 +62,16 @@
 {#                    {% endif %}#}
                 </ul>
                 <div class="clearfix"></div>
-                <div class="social-icon">
-                    {% if config.facebook_link %}
-                        <a href="{{ config.facebook_link }}" target="_blank"><i class="fa fa-facebook-square"></i></a>
-                    {% endif %}
-                    {% if config.instagram_link %}<a href="{{ config.instagram_link }}" target="_blank"><i class="fa fa-instagram"></i></a>{% endif %}
-                    {% if config.twitter_link %}<a href="{{ config.twitter_link }}" target="_blank"><i class="fa fa-twitter-square"></i></a>{% endif %}
-                    {% if config.google_plus_link %}
-                        <a href="{{ config.google_plus_link }}" target="_blank"><i class="fa fa-google-plus-square"></i></a>{% endif %}
-                    {% if config.linkedin_link %}<a href="{{ config.linkedin_link }}" target="_blank"><i class="fa fa-linkedin-square"></i></a>{% endif %}
-                </div>
+{#                <div class="social-icon">#}
+{#                    {% if config.facebook_link %}#}
+{#                        <a href="{{ config.facebook_link }}" target="_blank"><i class="fa fa-facebook-square"></i></a>#}
+{#                    {% endif %}#}
+{#                    {% if config.instagram_link %}<a href="{{ config.instagram_link }}" target="_blank"><i class="fa fa-instagram"></i></a>{% endif %}#}
+{#                    {% if config.twitter_link %}<a href="{{ config.twitter_link }}" target="_blank"><i class="fa fa-twitter-square"></i></a>{% endif %}#}
+{#                    {% if config.google_plus_link %}#}
+{#                        <a href="{{ config.google_plus_link }}" target="_blank"><i class="fa fa-google-plus-square"></i></a>{% endif %}#}
+{#                    {% if config.linkedin_link %}<a href="{{ config.linkedin_link }}" target="_blank"><i class="fa fa-linkedin-square"></i></a>{% endif %}#}
+{#                </div>#}
                 </div>
             </div>
         </div>

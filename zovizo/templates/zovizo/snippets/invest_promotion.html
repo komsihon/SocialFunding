@@ -1,0 +1,65 @@
+{% load i18n static humanize %}
+
+<section class="investment-promotion">
+    <div class="container">
+        <div class="row">
+            <h2 class="col-xs-12 text-center">{% trans "INVEST and EARN 9% PER YEAR" %}</h2>
+            <div style="clear: both; padding: 5vh 0">
+                <div class="col-sm-4">{% blocktrans %}
+                    Award-winning project in 2019 of TONY ELUMELU Foundation and African Bank of Development.
+                {% endblocktrans %}</div>
+                <div class="col-sm-4">
+                </div>
+                <div class="col-sm-4">
+
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div style="clear: both; font-weight: 600">
+                <div class="col-sm-4 col-sm-offset-2 detail">
+                    <h3>{% trans "COST OF A SHARE" %}</h3>
+                    <p>&euro; 55</p>
+                    <p>XAF {{ investor_pack_cost_xaf|intcomma }}</p>
+                </div>
+                <div class="col-sm-4 col-sm-offset-1 detail">
+                    <h3>{% trans "TARGET OF THE FUNDRAISING" %}</h3>
+                    <p>&euro; {{ fundraising_target|intcomma }}</p>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div style="clear: both; font-weight: 600; margin-top: 3vh">
+                <div class="col-sm-4 col-sm-offset-2 detail">
+                    <h3>{% blocktrans %}EARNINGS: <b>9%</b> OF TURNOVER TF DEPOSITED TO YOU QUARTERLY DURING <b>5 YEARS</b>{% endblocktrans %}</h3>
+                    <p></p>
+                </div>
+                <div class="col-sm-4 col-sm-offset-1 detail">
+                    <h3>{% trans "MINIMUM TO SUBSCRIBE" %}</h3>
+                    <p>2 packs</p>
+                    <div style="margin-top: 30px; min-width: 240px">
+                        <p class="pack-count-alert" style="display: none">{% trans "Please set the number of packs" %}</p>
+                        <input class="investor-pack-qty form-control" type="number" value="2" min="2"
+                               style="background: transparent; color: #fff; width: 240px;" >
+                    </div>
+                    {% if user.is_authenticated %}
+                        <button class="btn btn-buy-investor-pack payment-start" style="margin-top: 10px; min-width: 240px"
+                                data-product-id="{{ investor_pack.id }}">
+                            {% trans "Buy Investor pack" %}
+                        </button>
+                    {% else %}
+                        <button class="btn btn-buy-investor-pack login-first" style="margin-top: 10px; min-width: 240px"
+                                data-toggle="modal" data-target="#modal-login-first">
+                            {% trans "Buy Investor pack" %}</button>
+                    {% endif %}
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="col-xs-12 text-center" style="margin-top: 5vh">
+                <h3 style="font-size: 24px; line-height: 1.5em">{% trans "Check the Investor Guide and Details Online" %}</h3>
+                <a href="javascript:;" style="color: #88e056">
+                    <img scr="">
+                    <p>{% trans "View Guide" %}</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

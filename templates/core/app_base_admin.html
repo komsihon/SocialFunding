@@ -94,11 +94,11 @@
                         </ul>
                         <div class="divider"></div>
                         <ul class="nav nav-pills nav-stacked">
-                            {% if settings.IS_PROVIDER and config.is_pro_version %}
+{#                            {% if settings.IS_PROVIDER and config.is_pro_version %}#}
                                 <li role="presentation" class="payment-means">
                                     <a href="{% url 'billing:payment_mean_list' %}">{% trans "Payment means" %}</a>
                                 </li>
-                            {% endif %}
+{#                            {% endif %}#}
                             {% if app_modules %}
                             <li role="presentation" class="modules">
                                 <a href="{% url 'ikwen:module_list' %}">

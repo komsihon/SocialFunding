@@ -14,7 +14,9 @@
 .d-box {background: #fff;padding: 10px 25px 20px;}
 .d-box-title {font-size: 21px; font-weight: 400; font-family: Ubuntu, Lato, sans-serif}
 .d-box > div {padding-left: 30px;}
-.d-box .balance {font-size: 60px}
+.d-box .balance {margin: 0 0 15px -30px}
+.d-box .balance .currency {display: block;float: left;font-size: 20px;height: 100%;margin: 5px 5px 0 0;}
+.d-box .balance .amount {display: block;float: left;font-size: 45px}
 .section {margin-bottom: 45px}
 .section.cash .d-box {height: 212px}
 .section.cash .d-box-title {margin-top: 10px}
@@ -30,11 +32,49 @@
 .btn {height: 45px}
 .btn-success {color: #fff;background-color: #337ab7;border-color: #337ab7;}
 
+@keyframes rotate {
+    100% { transform: rotate(360deg); }
+}
+@-webkit-keyframes rotate {
+    100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes dash {
+    0% {stroke-dasharray: 1,150; stroke-dashoffset: 0}
+    50% {stroke-dasharray: 90,150; stroke-dashoffset: -35}
+    100% {stroke-dasharray: 90,150; stroke-dashoffset: -124}
+}
+@-webkit-keyframes dash {
+    0% {stroke-dasharray: 1, 150; stroke-dashoffset: 0}
+    50% {stroke-dasharray: 90, 150; stroke-dashoffset: -35}
+    100% {stroke-dasharray: 90, 150; stroke-dashoffset: -124}
+}
+
+.spinner-container {-webkit-animation: rotate 2s linear infinite; animation: rotate 2s linear infinite; z-index: 2}
+.spinner-container .path {
+  stroke-dasharray: 1,150;
+  stroke-dashoffset: 0;
+  stroke: rgba(69, 151, 255, 0.85);
+  stroke-linecap: round;
+  -webkit-animation: dash 1.5s ease-in-out infinite;
+  animation: dash 1.5s ease-in-out infinite;
+}
+#payment-methods .spinner {background: rgba(255, 255, 255, .6);height: 100%;margin-left: -15px;position: absolute;top: 0;width: 100%;}
 .payment-method {display: block;cursor: pointer;margin-bottom: 1em;}
 .payment-method .logo {display: block; text-align: center}
 .om-instructions {display: none; margin-top: 10px;}
 .modal-backdrop {background: #fff}
 .modal-backdrop.in {opacity: .7; filter: Alpha(opacity=70)}
+
+.investment-promotion {background: #054752; color: #fff}
+.investment-promotion h2, .investment-promotion h3 {color: #fff}
+.investment-promotion h2 {font-size: 3em}
+.investment-promotion .detail {margin-bottom: 6vh;font-size: 2em;}
+.btn-buy-investor-pack {background: #88e056;color: #0c3c08;}
+.btn-buy-investor-pack:hover {background: #9cea70;color: #0c3c08;}
+.pack-count-alert {color: #ec781f;font-weight: 400;font-size: 12px;margin: 0 0 5px;}
+.lang-switcher i {display: none}
+.footer-grid.share-with-mates li {display: inline-block}
+.footer-grid.share-with-mates li i {font-size: 24px; line-height: 27px}
 
 @media (max-width: 767px) {
     .h-section h2 {font-size: 33px;margin-bottom: 6vh}
@@ -45,10 +85,25 @@
     .bundle .cost {font-size: 36px;}
     .d-box {padding: 10px 5px 20px;}
     .d-box-title {font-size: 18px;}
+    .footer-w3l {padding: 2em 0}
+    .footer-grid {margin-bottom: 3em}
+    .footer-grid h4 {margin-bottom: 0}
+    .cover .bottom-cntr {clear: both;bottom: 10px;position: absolute;}
+    .cover .bottom-cntr i {color: #fff}
+    .cover .bottom-cntr select {background: transparent; color: #fff; width: 60px}
+    .cover .bottom-cntr .currency-switcher {float: left;margin-right: 30px;}
+    .cover .bottom-cntr .lang-switcher {float: right}
+    .no-logo {background: #00796B}
+    .investment-promotion h2 {font-size: 2em}
+    .investment-promotion .detail {margin-bottom: 6vh}
 }
+
 @media (min-width: 768px) {
     #project-title {width: 400px}
     .stage {width: 870px}
+    .currency-switcher select, .lang-switcher select {background: transparent;color: #4e4e4e;width: 46px;}
+    .currency-switcher {float: left;margin-right: 30px;}
+    .lang-switcher {float: right}
 }
 @media (min-width: 992px) {
     .stage {width: 870px}

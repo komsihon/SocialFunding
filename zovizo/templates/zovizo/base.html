@@ -7,7 +7,7 @@ License: Creative Commons Attribution 3.0 Unported
 License URL: http://creativecommons.org/licenses/by/3.0/
 -->
 <!DOCTYPE HTML>
-<html lang="{{ lang }}" xmlns:og="http://ogp.me/ns#">
+<html lang="{{ lang }}">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -16,10 +16,11 @@ License URL: http://creativecommons.org/licenses/by/3.0/
         {% include 'core/snippets/color_and_icons.html' %}
 		{% block page_title %}{% endblock %}
 		{% block head_style %}
+            <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
             <link href="{% static 'ikwen/css/bootstrap.min.css' %}" rel="stylesheet">
             <link href="{% static 'ikwen/css/font-awesome.min.css' %}" rel="stylesheet">
             <link rel="stylesheet" href="{% static 'ikwen/swiper/css/swiper.min.css' %}">
-            <link rel="stylesheet" href="{% static 'zovizo/css/main.css' %}?v=19.12.28">
+            <link rel="stylesheet" href="{% static 'zovizo/css/main.css' %}?v=20.7.11">
 		{% endblock %}
         {% block head_js %}
             <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -67,10 +68,10 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                             <div class="container-fluid">
                                 <ul class="nav navbar-nav navbar-right">
                                     <li>
-                                        <a href="{% url 'home' %}">{% trans "Accueil" %}</a>
+                                        <a href="{% url 'home' %}">{% trans "Home" %}</a>
                                     </li>
                                     <li>
-                                        <a href="{% url 'about' %}">{% trans "À propos" %}</a>
+                                        <a href="{% url 'about' %}">{% trans "About" %}</a>
                                     </li>
 {#                                    <li>#}
 {#                                        <a href="#">{% trans "News" %}</a>#}
@@ -87,7 +88,7 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                                                 <li style="padding: 9px 20px 3px; font-size: 18px"> {{ user.get_short_name }} </li>
                                                 <li role="separator" class="divider"></li>
                                                 <li>
-                                                    <a href="{% url 'zovizo:profile' %}">{% trans "Mon Zovizo" %}</a>
+                                                    <a href="{% url 'zovizo:profile' %}">{% trans "My Zovizo" %}</a>
                                                 </li>
                                                 <li>
                                                     <a href="{{ account_setup_url|ikwenize }}">{% trans "Account setup" %}</a>
@@ -97,7 +98,7 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                                         </li>
                                     {% else %}
                                         <li>
-                                            <a href="{% url 'ikwen:do_sign_in' %}">{% trans "Connexion" %}</a>
+                                            <a href="{% url 'ikwen:do_sign_in' %}">{% trans "Login" %}</a>
                                         </li>
                                     {% endif %}
                                 </ul>
@@ -173,11 +174,10 @@ License URL: http://creativecommons.org/licenses/by/3.0/
         {% block banner %}{% endblock %}
         {% block content %}{% endblock %}
         {% block footer %}
-            {% cache 300 footer %}
-            <div class="footer-w3l hidden-xs">
+            <div class="footer-w3l">
                 <div class="container">
                     <div class="footer-grids">
-                        <div class="col-sm-6 col-md-4 footer-grid">
+                        <div class="col-sm-4 footer-grid">
                             <h4>{{ service.project_name }}</h4>
                             <ul>
                                 <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
@@ -191,28 +191,43 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                                 <li><a href="{% url 'ikwen:sign_in' %}">{% trans "Login" %}</a></li>
                             </ul>
                         </div>
-                        <div class="col-sm-6 col-md-4 footer-grid foot">
+                        <div class="col-sm-4 footer-grid foot">
                             <h4>{% trans "Contacts" %}</h4>
                             <ul>
-                                <li><i class="fa fa-map-marker" aria-hidden="true" style="font-size: 20px"></i><a href="#">{{ config.address }}</a></li>
-                                {% if config.contact_phone %}
-                                <li><i class="fa fa-phone" aria-hidden="true" style="font-size: 20px"></i><a href="#">{{ config.contact_phone }}</a></li>
+{#                                <li><i class="fa fa-map-marker" aria-hidden="true" style="font-size: 20px"></i><a href="#">{{ config.address }}</a></li>#}
+                                {% if config.whatsapp_phone %}
+                                <li>
+                                    <i class="fab fa-whatsapp" aria-hidden="true" style="font-size: 24px; line-height: 27px"></i>
+                                    <a href="#">{{ config.whatsapp_phone }}</a>
+                                </li>
                                 {% endif %}
-                                <li><i class="fa fa-envelope" aria-hidden="true"></i><a href="mailto:{{ config.contact_email }}">{{ config.contact_email }}</a></li>
+                                <li>
+                                    <i class="fa fa-envelope" aria-hidden="true" style="font-size: 24px; line-height: 27px"></i>
+                                    <a href="mailto:{{ config.contact_email }}">{{ config.contact_email }}</a>
+                                </li>
                             </ul>
                         </div>
-                        <div class="col-sm-6 col-md-4 footer-grid hidden-sm">
-                            <h4>{% trans "Blog" %}</h4>
-                            <ul>
-{#                                {% for category in quick_access_categories %}#}
-{#                                    <li>#}
-{#                                        {% url 'shopping:product_list' category.slug as product_list_url %}#}
-{#                                        <a href="{{ product_list_url }}">{{ category.name }}</a>#}
-{#                                    </li>#}
-{#                                {% endfor %}#}
+                        <div class="col-sm-4 footer-grid hidden-sm share-with-mates">
+                            <h4>{% trans "Share with mates" %}</h4>
+                            <ul style="padding-left: 0">
+                                <li>
+                                    <a href="https://api.whatsapp.com/send?text=https://zovizo.com">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://facebook.com/sharer/sharer.php?u=https://zovizo.com" target="_blank">
+                                        <i class="fab fa-facebook"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://twitter.com/home?status=https://zovizo.com" target="_blank">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                </li>
                             </ul>
                         </div>
-                        <div class="clearfix"> </div>
+                        <div class="clearfix"></div>
                     </div>
                 </div>
             </div>
@@ -224,10 +239,13 @@ License URL: http://creativecommons.org/licenses/by/3.0/
                             - <a href="{{ settings.LEGAL_MENTIONS_URL }}" style="text-decoration: none">{% trans "Legal mentions" %}</a>
                         </p>
                     </div>
+                    <div class="pull-right hidden-xs">
+                        {% include 'core/snippets/language_switcher.html' %}
+                        {% include 'core/snippets/currency_switcher.html' %}
+                    </div>
                     <div class="clearfix"></div>
                 </div>
             </div>
-            {% endcache %}
         {% endblock %}
         {% include 'zovizo/snippets/edge_panel.html' %}
         <div class="edge-swipe-overlay"></div>
@@ -236,7 +254,8 @@ License URL: http://creativecommons.org/licenses/by/3.0/
         <script src="{% static 'ikwen/swiper/js/swiper.min.js' %}"></script>
         <script src="{% static 'ikwen/hammerjs/hammer.min.js' %}"></script>
         <script src="{% static 'ikwen/hammerjs/jquery.hammer.js' %}"></script>
-        <script src="{% static 'ikwen/js/ikwen-util.js' %}?v=19.3.10"></script>
+        <script src="{% static 'ikwen/js/ikwen-util.js' %}?v=20.7.11"></script>
+        <script src="{% static 'zovizo/js/investor-pack.js' %}"></script>
         {% block js %}{% endblock %}
     </body>
 </html>

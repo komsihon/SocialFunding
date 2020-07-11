@@ -71,7 +71,7 @@ a:hover, a:focus {color: #c52d2f; text-decoration: none; outline: none;}
 .dropdown-menu {margin-top: -1px; min-width: 180px;}
 .center h2{font-size: 36px; margin-top: 0; margin-bottom: 20px;}
 body > section {background-size: cover; padding: 70px 0; width: 100%}
-body > section.h-section {min-height: 745px}
+body > section.h-section {min-height: 745px;}
 .center {text-align: center; padding-bottom: 55px;}
 .lead{font-size: 16px; line-height: 24px; font-weight: 400;}
 .transparent-bg {background-color: transparent !important; margin-bottom: 0;}
@@ -420,7 +420,7 @@ section.home-section .description {font-size: 1.3em}
 }
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px) {
-    body > section.h-section {min-height: 645px}
+    body > section.h-section {min-height: 645px;}
     .latest-text {bottom: -90%}
     .social-icon {margin-top: 1.8em; padding-left: 15px;}
     .navbar-nav>li>.dropdown-menu {background: #ffffff;}
