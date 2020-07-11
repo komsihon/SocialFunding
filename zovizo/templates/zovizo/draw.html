@@ -28,7 +28,7 @@
 	<section>
         <div class="text-center" style="padding: 15vh 0;">
             <button class="btn btn-success btn-lg" data-toggle="modal"
-                    data-target="#modal-draw" id="start-draw">Lancer le tirage</button>
+                    data-target="#modal-draw" id="start-draw">{% trans 'Start draw' %}</button>
             <div class="clearfix"></div>
         </div>
 	</section>
@@ -40,9 +40,9 @@
                     <button style="color: #fff" type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title text-has-shade">{% trans "Tirage en cours" %}</h4>
+                    <h4 class="modal-title text-has-shade">{% trans "Draw running" %}</h4>
                     <h2 class="jackpot text-has-shade">{{ draw.jackpot|intcomma }} FCFA</h2>
-                    <p>{% trans "À gagner" %}</p>
+                    <p>{% trans "To win" %}</p>
                 </div>
                 <div class="modal-body text-center">
                     <div class="row">
@@ -73,7 +73,7 @@
                     </div>
                     <p class="cta-text">{% trans "Did you miss this draw ? Don't miss the next." %}</p>
                     <div class="text-center cta">
-                        <a href="{% url 'ikwen:sign_in' %}" class="btn btn-success">{% trans "Inscrivez-vous sur Zovizo" %}</a>
+                        <a href="{% url 'ikwen:sign_in' %}" class="btn btn-success">{% trans "Subscribe on Zovizo" %}</a>
                     </div>
                 </div>
             </div>
