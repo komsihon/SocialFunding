@@ -246,7 +246,7 @@ def set_bundle_payment_checkout(request, *args, **kwargs):
     bundle_id = request.POST['product_id']
     bundle = Bundle.objects.get(pk=bundle_id)
     if bundle.currency.code != 'XAF':
-        next_url = request.META['HTTP_REFERRER']
+        next_url = request.META['HTTP_REFERER']
         messages.error(request, _("Only PayPal payment is supported for this currency."))
         return HttpResponseRedirect(next_url)
     qty = 1

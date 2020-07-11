@@ -166,6 +166,9 @@
     <script src="{% static 'zovizo/js/investor-pack.js' %}"></script>
     <script>
         (function() {
+            {% if messages %}
+                {% for msg in messages %}ikwen.showFloatingNotice('{{ msg|safe }}', '{{ msg.tags }}', 6);{% endfor %}
+            {% endif %}
             $('.edit-project').click(function() {
                 $('.section.project .view').hide();
                 $('.section.project .edit').show()

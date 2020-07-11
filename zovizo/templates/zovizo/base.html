@@ -256,6 +256,13 @@ License URL: http://creativecommons.org/licenses/by/3.0/
         <script src="{% static 'ikwen/hammerjs/jquery.hammer.js' %}"></script>
         <script src="{% static 'ikwen/js/ikwen-util.js' %}?v=20.7.11"></script>
         <script src="{% static 'zovizo/js/investor-pack.js' %}"></script>
+        <script>
+            (() => {
+                {% if messages %}
+                    {% for msg in messages %}ikwen.showFloatingNotice('{{ msg|safe }}', '{{ msg.tags }}', 6);{% endfor %}
+                {% endif %}
+            })()
+        </script>
         {% block js %}{% endblock %}
     </body>
 </html>
