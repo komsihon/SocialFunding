@@ -169,7 +169,6 @@ class Profile(TemplateView):
             draw.jackpot = draw.participant_count * SUBSCRIPTION_FEES
         draw.winner_jackpot = draw.jackpot * (1 - COMPANY_SHARE/100)
         context['bundle_list'] = Bundle.objects.filter(is_active=True, is_investor_pack=False, currency=currency).order_by('amount')
-        context['investor_bundle_list'] = Bundle.objects.filter(is_active=True, is_investor_pack=True, currency=currency).order_by('amount')
         wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=member.id)
         context['wallet'] = wallet
         if wallet.currency_code:
@@ -188,6 +187,12 @@ class Profile(TemplateView):
                 sub = Subscription.objects.create(member=member, bundle=bundle, amount=bundle.amount, number=number)
             sub.number = '%06d' % sub.number
             context['sub'] = sub
+        try:
+            context['investor_pack'] = Bundle.objects.filter(currency=currency, is_investor_pack=True)[0]
+        except:
+            pass
+        context['investor_pack_cost_xaf'] = 36500
+        context['fundraising_target'] = 300000
         return context
 
     def get(self, request, *args, **kwargs):
@@ -240,6 +245,10 @@ def set_bundle_payment_checkout(request, *args, **kwargs):
     service = get_service_instance()
     bundle_id = request.POST['product_id']
     bundle = Bundle.objects.get(pk=bundle_id)
+    if bundle.currency.code != 'XAF':
+        next_url = request.META['HTTP_REFERRER']
+        messages.error(request, _("Only PayPal payment is supported for this currency."))
+        return HttpResponseRedirect(next_url)
     qty = 1
     if bundle.is_investor_pack:
         qty = int(request.POST.get('quantity', 1))

@@ -125,7 +125,7 @@
                                     {{ bundle.duration }}
                                     {% if bundle.duration == 1 %}{% trans "Day" %}{% else %}{% trans "Days" %}{% endif %}</h3>
                                 <div class="cost text-muted">
-                                    {% blocktrans with amount=bundle.amount|intcomma %}<span class="currency">XAF</span> {{ amount }}{% endblocktrans %}
+                                    <span class="currency">{{ CURRENCY.symbol }}</span> {{ bundle.amount|intcomma }}
                                 </div>
                                 {% if user.is_authenticated %}
                                     <button class="btn btn-success btn-block payment-start"

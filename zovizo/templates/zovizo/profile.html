@@ -145,7 +145,7 @@
                         <div class="bundle subtle-shade d-box text-center">
                             <h3 class="d-box-title">{{ bundle.duration }} {% trans "Days" %}</h3>
                             <div class="cost text-muted">
-                                {% blocktrans with amount=bundle.amount|intcomma %}<span class="currency">XAF</span> {{ amount }}{% endblocktrans %}
+                                <span class="currency">{{ currency.symbol }}</span> {{ bundle.amount|intcomma }}
                             </div>
                             <button class="btn btn-success btn-block payment-start"
                                     data-product-id="{{ bundle.id }}">{% trans "Subscribe Now" %}</button>
@@ -163,6 +163,7 @@
 
 {% block js %}
     {{ block.super }}
+    <script src="{% static 'zovizo/js/investor-pack.js' %}"></script>
     <script>
         (function() {
             $('.edit-project').click(function() {
