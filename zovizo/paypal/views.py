@@ -6,6 +6,7 @@ import logging
 import requests
 import json
 
+from currencies.models import Currency
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
@@ -52,12 +53,17 @@ class SetExpressCheckout(TemplateView):
         member = request.user
         try:
             bundle_id = request.POST['product_id']
-            qty = int(request.POST.get('qty', 1))
             bundle = Bundle.objects.get(pk=bundle_id)
+            qty = 1
+            if bundle.is_investor_pack:
+                if bundle.currency.code != 'EUR':
+                    currency = Currency.objects.get(code='EUR')
+                    bundle = Bundle.objects.filter(currency=currency, is_investor_pack=True)[0]
+                qty = int(request.POST.get('quantity', 1))
             amount = bundle.amount * qty
             number = Subscription.objects.all().count() + 1
-            sub_amount = amount / bundle.currency.factor
-            sub = Subscription.objects.create(member=member, bundle=bundle, amount=sub_amount,
+            xaf_amount = amount / bundle.currency.factor
+            sub = Subscription.objects.create(member=member, bundle=bundle, amount=xaf_amount,
                                               number=number, quantity=qty)
         except:
             return HttpResponseRedirect(cancel_url)
@@ -91,7 +97,7 @@ class SetExpressCheckout(TemplateView):
             # Items
             "L_PAYMENTREQUEST_0_NAME0": "Pack %d day(s)" % bundle.duration,
             "L_PAYMENTREQUEST_0_DESC0": '<' + _("No description") + '>',
-            "L_PAYMENTREQUEST_0_AMT0": amount,
+            "L_PAYMENTREQUEST_0_AMT0": bundle.amount,
             "L_PAYMENTREQUEST_0_QTY0": qty,
             "L_PAYMENTREQUEST_0_TAXAMT0": 0,
             "L_PAYMENTREQUEST_0_NUMBER0": 1,
@@ -186,7 +192,7 @@ class DoExpressCheckout(TemplateView):
         subscription_id = request.POST['subscription_id']
         sub = Subscription.objects.select_related('member').get(pk=subscription_id)
         bundle = sub.bundle
-        amount = bundle.amount
+        amount = bundle.amount * sub.quantity
 
         ec_data = {
             "USER": paypal['username'],
@@ -207,8 +213,8 @@ class DoExpressCheckout(TemplateView):
             # Items
             "L_PAYMENTREQUEST_0_NAME0": "Pack %d day(s)" % bundle.duration,
             "L_PAYMENTREQUEST_0_DESC0": '<' + _("No description") + '>',
-            "L_PAYMENTREQUEST_0_AMT0": amount,
-            "L_PAYMENTREQUEST_0_QTY0": request.POST.get('qty', 1),
+            "L_PAYMENTREQUEST_0_AMT0": bundle.amount,
+            "L_PAYMENTREQUEST_0_QTY0": sub.quantity,
             "L_PAYMENTREQUEST_0_TAXAMT0": 0,
             "L_PAYMENTREQUEST_0_NUMBER0": 1,
             "L_PAYMENTREQUEST_0_ITEMURL0": service.url,

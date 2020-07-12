@@ -3,15 +3,20 @@
 <section class="investment-promotion">
     <div class="container">
         <div class="row">
-            <h2 class="col-xs-12 text-center">{% trans "INVEST and EARN 9% PER YEAR" %}</h2>
+            <h2 class="col-xs-12 text-center">{% blocktrans %}INVEST and EARN 9% PER YEAR{% endblocktrans %}</h2>
             <div style="clear: both; padding: 5vh 0">
-                <div class="col-sm-4">{% blocktrans %}
+                <div class="col-sm-3 col-sm-offset-2" style="height: 120px; padding-top: 24px">{% blocktrans %}
                     Award-winning project in 2019 of TONY ELUMELU Foundation and African Bank of Development.
                 {% endblocktrans %}</div>
-                <div class="col-sm-4">
+                <div class="col-sm-4 text-center">
+                    <div style="height: 120px; padding-top: 10px">
+                        <img src="{% static "zovizo/img/TEF_Logo.png" %}" class="img-responsive" />
+                    </div>
                 </div>
-                <div class="col-sm-4">
-
+                <div class="col-sm-2 text-center">
+                    <div style="background: #fff; height: 120px; line-height: 120px; margin: auto; width: 120px">
+                        <img src="{% static "zovizo/img/Logo_BAD.png" %}" height="100" />
+                    </div>
                 </div>
                 <div class="clearfix"></div>
             </div>
@@ -23,7 +28,7 @@
                 </div>
                 <div class="col-sm-4 col-sm-offset-1 detail">
                     <h3>{% trans "TARGET OF THE FUNDRAISING" %}</h3>
-                    <p>&euro; {{ fundraising_target|intcomma }}</p>
+                    <p>{{ fundraising_target|intcomma }} {% trans "Shares" %}</p>
                 </div>
                 <div class="clearfix"></div>
             </div>
@@ -55,8 +60,7 @@
             </div>
             <div class="col-xs-12 text-center" style="margin-top: 5vh">
                 <h3 style="font-size: 24px; line-height: 1.5em">{% trans "Check the Investor Guide and Details Online" %}</h3>
-                <a href="javascript:;" style="color: #88e056">
-                    <img scr="">
+                <a href="https://drive.google.com/folderview?id=185jE3c-3Eqp2TJ2ZFbzreie97M7rrYRt" style="color: #88e056">
                     <p>{% trans "View Guide" %}</p>
                 </a>
             </div>

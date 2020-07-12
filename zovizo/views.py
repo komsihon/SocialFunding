@@ -75,11 +75,13 @@ class Home(TemplateView):
         context['bundle_list'] = Bundle.objects.filter(currency=currency, is_investor_pack=False,
                                                        show_on_home=True).order_by('amount')
         try:
+            if currency.code != 'XAF':
+                currency = Currency.objects.get(code='EUR')
             context['investor_pack'] = Bundle.objects.filter(currency=currency, is_investor_pack=True)[0]
         except:
             pass
         context['investor_pack_cost_xaf'] = 36500
-        context['fundraising_target'] = 300000
+        context['fundraising_target'] = 5455
         return context
 
     def get(self, request, *args, **kwargs):
@@ -188,11 +190,13 @@ class Profile(TemplateView):
             sub.number = '%06d' % sub.number
             context['sub'] = sub
         try:
+            if currency.code != 'XAF':
+                currency = Currency.objects.get(code='EUR')
             context['investor_pack'] = Bundle.objects.filter(currency=currency, is_investor_pack=True)[0]
         except:
             pass
         context['investor_pack_cost_xaf'] = 36500
-        context['fundraising_target'] = 300000
+        context['fundraising_target'] = 5455
         return context
 
     def get(self, request, *args, **kwargs):
@@ -245,12 +249,15 @@ def set_bundle_payment_checkout(request, *args, **kwargs):
     service = get_service_instance()
     bundle_id = request.POST['product_id']
     bundle = Bundle.objects.get(pk=bundle_id)
-    if bundle.currency.code != 'XAF':
+    if not bundle.is_investor_pack and bundle.currency.code != 'XAF':
         next_url = request.META['HTTP_REFERER']
         messages.error(request, _("Only PayPal payment is supported for this currency."))
         return HttpResponseRedirect(next_url)
     qty = 1
     if bundle.is_investor_pack:
+        if bundle.currency.code != 'XAF':
+            currency = Currency.objects.get(code='XAF')
+            bundle = Bundle.objects.filter(currency=currency, is_investor_pack=True)[0]
         qty = int(request.POST.get('quantity', 1))
     amount = bundle.amount * qty
     number = Subscription.objects.all().count() + 1
