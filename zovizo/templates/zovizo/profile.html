@@ -59,11 +59,13 @@
                                 {% trans "Balance" %}
                             </h3>
                             <div>
+                                {% with wallet_currency=wallet.currency %}
                                 <div class="balance" style="color: #666">
-                                    <span class="currency">{{ currency.symbol }}</span>
-                                    <span class="amount">{{ wallet.balance|floatformat:currency.precision|intcomma }}</span>
+                                    <span class="currency text-muted">{{ wallet_currency.symbol }}</span>
+                                    <span class="amount">{{ wallet.balance|floatformat:wallet_currency.precision|intcomma }}</span>
                                     <div class="clearfix"></div>
                                 </div>
+                                {% endwith %}
 {#                                <div class="until">#}
 {#                                    <span>{% trans "Exp." %}</span>#}
 {#                                    <span class="text-muted">16 Sept. 2018</span>#}
@@ -82,8 +84,8 @@
                             </h3>
                             <div>
                                 <div class="balance" style="font-weight: 600">
-                                    <span class="currency">{{ currency.symbol }}</span>
-                                    <span class="amount">{{ draw.winner_jackpot|currency:currency.code|floatformat:currency.precision|intcomma }}</span>
+                                    <span class="currency text-muted" style="font-weight: 400">{{ CURRENCY.symbol }}</span>
+                                    <span class="amount">{{ draw.winner_jackpot|currency:CURRENCY.code|floatformat:CURRENCY.precision|intcomma }}</span>
                                     <div class="clearfix"></div>
                                 </div>
                                 <div class="until">
@@ -145,7 +147,7 @@
                         <div class="bundle subtle-shade d-box text-center">
                             <h3 class="d-box-title">{{ bundle.duration }} {% trans "Days" %}</h3>
                             <div class="cost text-muted">
-                                <span class="currency">{{ currency.symbol }}</span> {{ bundle.amount|intcomma }}
+                                <span class="currency">{{ CURRENCY.symbol }}</span> {{ bundle.amount|floatformat:CURRENCY.precision|intcomma }}
                             </div>
                             <button class="btn btn-success btn-block payment-start"
                                     data-product-id="{{ bundle.id }}">{% trans "Subscribe Now" %}</button>
@@ -156,14 +158,12 @@
             </div>
             <div class="clearfix"></div>
         </div>
-        {% include 'zovizo/snippets/invest_promotion.html' %}
     </div>
     {% include 'billing/snippets/modal_payment_options.html' %}
 {% endblock %}
 
 {% block js %}
     {{ block.super }}
-    <script src="{% static 'zovizo/js/investor-pack.js' %}"></script>
     <script>
         (function() {
             {% if messages %}

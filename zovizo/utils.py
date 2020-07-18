@@ -151,7 +151,7 @@ def detect_and_set_currency_by_ip(request):
         result = json.loads(r.content)
         currency_code = result[country_code]
         try:
-            Currency.active.filter(code=currency_code)
+            Currency.active.get(code=currency_code)
         except:
             currency_code = 'USD'
     except:

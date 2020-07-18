@@ -173,10 +173,6 @@ class Profile(TemplateView):
         context['bundle_list'] = Bundle.objects.filter(is_active=True, is_investor_pack=False, currency=currency).order_by('amount')
         wallet, update = Wallet.objects.using('zovizo_wallets').get_or_create(member_id=member.id)
         context['wallet'] = wallet
-        if wallet.currency_code:
-            context['currency'] = wallet.currency
-        else:
-            context['currency'] = currency
         ewallet, update = EarningsWallet.objects.using('zovizo_wallets').get_or_create(member_id=member.id)
         context['earnings_wallet'] = ewallet
         context['draw'] = draw
@@ -303,7 +299,7 @@ def set_bundle_payment_checkout(request, *args, **kwargs):
 def confirm_bundle_payment(request, *args, **kwargs):
     service = get_service_instance(check_cache=False)
     ikwen_share_rate = getattr(settings, 'IKWEN_SHARE_RATE', 3)
-    sub = kwargs.pop('subscription')
+    sub = kwargs.get('subscription')
     if sub:
         signature = request.session['signature']
         mean = 'paypal'
